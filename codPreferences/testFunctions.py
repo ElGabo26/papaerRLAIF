@@ -1,5 +1,5 @@
 import pandas as pd
-from .tools import *
+from tools import *
 
 #lista de  modelos
 modelsName=["deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B 1.5B",
