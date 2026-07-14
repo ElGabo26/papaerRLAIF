@@ -5,7 +5,7 @@ from tools import *
 modelsName=["deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
 "Qwen/Qwen2.5-1.5B-Instruct 1.5B",
 "meta-llama/Llama-3.2-1B-Instruct"]
-LOCALROOT="/"
+LOCALROOT="/workspace/models"
 
 modelsroot=[]
 models={}
