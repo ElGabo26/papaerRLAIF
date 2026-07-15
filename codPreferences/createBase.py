@@ -1,46 +1,39 @@
 import pandas as pd
+from tqdm import tqdm
 from time import time
 from  tools import  makeResponse, testModel
 from metrics import medir_recursos
 
-RUTA=input("inserte ruta  del  modelo: ")
-REPETITIONS=int(input("Inserte Cantidad de  respuestas: "))
+RUTA="/workspace/models/Llama-3.2-1B-Instruct"
+REPETITIONS=4
 RUTAOUTPUT="/workspace/papaerRLAIF/codPreferences/bases"
 base=pd.read_csv("codPreferences/prompts.csv")
 prompts=base.sample(frac=0.025, random_state=42)
 prompts1=prompts['prompt'].values
 
+total=len(prompts1)
+
 token, model= testModel(RUTA)
 result=prompts.copy()
 
-for i in range(REPETITIONS): 
-    response=[]
-    timeR=[]
-    ram=[]
-    gpu=[]
-    c=0
-    for p in prompts1:
-        t0=time()
-        antes =medir_recursos()
-        r=makeResponse(token,model,p,0.25)
-        despues=medir_recursos()
-        t1=time()
-        tr=t1-t0
-        timeR.append(tr)
-        response.append(r)
-        ram.append(despues['ram_mb']-antes['ram_mb'])
-        gpu.append(despues['gpu_mb']-antes['gpu_mb'])
-        print(len(prompts)-c)
-        c+=1
+def getresults(token, model,x):
+    t0=time()
+    r=makeResponse(token,model,x,0.25)
+    despues=medir_recursos()
+    t1=time()
+    barra.update(1)
+    return x,r,t1-t0, despues['ram_mb'], despues['gpu_mb']
 
-    result[f'response_{i+1}']=response
-    result[f'time_{i+1}']=timeR
-    result[f'ram_mb_{i+1}']=ram
-    result[f'gpu_mb_{i+1}']=gpu
+
+for i in range(REPETITIONS): 
+    print(f"repeticion_{i+1}")
+    columnas=['prompt',f'response_{i+1}',f'tiempo_{i+1}',f'ram_mb_{i+1}',f'gpu_mb_{i+1}']  
+    with tqdm(total=total) as barra:
+        resultado = list(map(lambda x: getresults(token, model,x)))
+    r=pd.DataFrame(columns=columnas,data=resultado)
+    name='result'+RUTA.split('/')[-1]
+    r.to_csv(f"{RUTAOUTPUT}/{name}_{i+1}.csv")
     print(f"RESPUESTAS: {i+1} REALIZADAS")
 
-
-name='result'+RUTA.split('/')[-1]
-result.to_csv(f"{RUTAOUTPUT}/{name}.csv")
 
 
