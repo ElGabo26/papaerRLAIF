@@ -70,7 +70,7 @@ def makeResponse(tokenizer, model, prompt, temperature=0.3):
     texto=tokenizer.apply_chat_template(
         mensajes,
         tokenize=False,
-        add_generation_promot=True
+        add_generation_promot=False
     )
     #transformamos  el  texto a  tokens
     inputs=tokenizer(

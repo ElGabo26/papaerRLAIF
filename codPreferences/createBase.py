@@ -16,15 +16,15 @@ total=len(prompts1)
 
 def getresults(token, model,x):
     t0=time()
-    r=makeResponse(token,model,x,0.25)
+    r=makeResponse(token,model,x,0.6)
     despues=medir_recursos()
     t1=time()
     barra.update(1)
     return x,r,t1-t0, despues['ram_mb'], despues['gpu_mb']
 
+#['/workspace/models/DeepSeek-R1-Distill-Qwen-1.5B', '/workspace/models/Qwen2.5-1.5B-Instruct']
 
-for ruta in ['/workspace/models/DeepSeek-R1-Distill-Qwen-1.5B',
-             '/workspace/models/Qwen2.5-1.5B-Instruct']:
+for ruta in ['/workspace/models/DeepSeek-R1-Distill-Qwen-1.5B']:
     print("MODELO: ", ruta)
     token, model= testModel(ruta)    
     for i in range(REPETITIONS): 
