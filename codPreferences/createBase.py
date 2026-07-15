@@ -4,7 +4,7 @@ from  tools import  makeResponse, testModel
 RUTA='/workspace/models/Qwen2.5-1.5B-Instruct'
 base=pd.read_csv("codPreferences/prompts.csv")
 prompts=base.sample(300, random_state=42)
-prompts1=prompts['prompts'].values
+prompts1=prompts['prompt'].values
 
 token, model= testModel(RUTA)
 
