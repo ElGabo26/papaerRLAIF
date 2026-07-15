@@ -3,14 +3,20 @@ from  tools import  makeResponse, testModel
 
 RUTA='/workspace/models/Qwen2.5-1.5B-Instruct'
 base=pd.read_csv("codPreferences/prompts.csv")
-prompts=base['prompt'].values
+prompts=base.sample(300, random_state=42)
+prompts1=prompts['prompts'].values
 
 token, model= testModel(RUTA)
 
-response=list(map(lambda x: makeResponse(token, model ,x,0.25),
-    prompts))
+response=[]
+c=0
+for p in prompts1:
+    r=makeResponse(token,model,p,0,25)
+    print(len(prompts)-c)
+    c+=1
+    
 
-result=base.copy()
+result=prompts.copy()
 
 result['response']=response
 
