@@ -11,7 +11,7 @@ token, model= testModel(RUTA)
 response=[]
 c=0
 for p in prompts1:
-    r=makeResponse(token,model,p,0,25)
+    r=makeResponse(token,model,p,0.25)
     print(len(prompts)-c)
     c+=1
     
