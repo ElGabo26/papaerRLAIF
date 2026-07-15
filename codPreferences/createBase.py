@@ -8,7 +8,7 @@ RUTA="/workspace/models/Llama-3.2-1B-Instruct"
 REPETITIONS=4
 RUTAOUTPUT="/workspace/papaerRLAIF/codPreferences/bases"
 base=pd.read_csv("codPreferences/prompts.csv")
-prompts=base.sample(frac=0.025, random_state=42)
+prompts=base.sample(frac=1.0, random_state=42)
 prompts1=prompts['prompt'].values
 
 total=len(prompts1)
