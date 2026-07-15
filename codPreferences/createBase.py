@@ -4,7 +4,7 @@ from  tools import  makeResponse, testModel
 from metrics import medir_recursos
 
 RUTA=input("inserte ruta  del  modelo: ")
-REPETITIONS=int("Inserte Cantidad de  respuestas: ")
+REPETITIONS=int(input("Inserte Cantidad de  respuestas: "))
 RUTAOUTPUT="/workspace/papaerRLAIF/codPreferences/bases"
 base=pd.read_csv("codPreferences/prompts.csv")
 prompts=base.sample(frac=0.1, random_state=42)
