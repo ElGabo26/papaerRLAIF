@@ -61,7 +61,7 @@ def testModel(rutaModelo):
     print(respuesta)
     return tokenizer, model
 
-def makeResponse(tokenizer, model, prompt):
+def makeResponse(tokenizer, model, prompt, temperature=0.3):
     mensajes=[{
         "role": "user",
         "content":prompt
@@ -83,7 +83,7 @@ def makeResponse(tokenizer, model, prompt):
         **inputs, #se  agrega  todos  los  inputs
         max_new_tokens=200,
         do_sample=True, # Garantiza aleatoriedad
-        temperature=0.3, #Temperatura
+        temperature=temperature, #Temperatura
         top_p=0.9, # top  de  probabilidad  acumulada
         pad_token_id=tokenizer.eos_token_id )
 #obtenemos solo  la  respuesta  generada
