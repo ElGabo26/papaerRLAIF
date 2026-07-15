@@ -81,7 +81,7 @@ def makeResponse(tokenizer, model, prompt, temperature=0.3):
     with torch.no_grad():
         salida = model.generate(
         **inputs, #se  agrega  todos  los  inputs
-        max_new_tokens=100,
+        max_new_tokens=200,
         do_sample=True, # Garantiza aleatoriedad
         temperature=temperature, #Temperatura
         top_p=0.9, # top  de  probabilidad  acumulada
