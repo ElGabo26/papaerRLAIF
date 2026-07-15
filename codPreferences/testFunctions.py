@@ -11,9 +11,10 @@ modelsroot=[]
 models={}
 for  m  in  modelsName:
     ruta =dowloadModel(m,LOCALROOT)
-    modelsroot.append(modelsroot)
-    t, model =testModel(ruta)
-    models[m]=(t,m)
+    print(ruta)
+    #modelsroot.append(modelsroot)
+    #t, model =testModel(ruta)
+    #models[m]=(t,m)
     
 
 
