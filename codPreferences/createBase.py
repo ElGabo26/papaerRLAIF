@@ -29,11 +29,12 @@ for i in range(REPETITIONS):
     print(f"repeticion_{i+1}")
     columnas=['prompt',f'response_{i+1}',f'tiempo_{i+1}',f'ram_mb_{i+1}',f'gpu_mb_{i+1}']  
     with tqdm(total=total) as barra:
-        resultado = list(map(lambda x: getresults(token, model,x)))
+        resultado = list(map(
+            lambda x: getresults(token, model,x),
+            prompts1))
     r=pd.DataFrame(columns=columnas,data=resultado)
     name='result'+RUTA.split('/')[-1]
     r.to_csv(f"{RUTAOUTPUT}/{name}_{i+1}.csv")
     print(f"RESPUESTAS: {i+1} REALIZADAS")
-
 
 
