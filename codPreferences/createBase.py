@@ -7,7 +7,7 @@ RUTA=input("inserte ruta  del  modelo: ")
 REPETITIONS=int(input("Inserte Cantidad de  respuestas: "))
 RUTAOUTPUT="/workspace/papaerRLAIF/codPreferences/bases"
 base=pd.read_csv("codPreferences/prompts.csv")
-prompts=base.sample(frac=0.1, random_state=42)
+prompts=base.sample(frac=0.025, random_state=42)
 prompts1=prompts['prompt'].values
 
 token, model= testModel(RUTA)
