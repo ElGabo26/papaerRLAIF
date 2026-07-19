@@ -16,3 +16,11 @@ tensorboard>=2.18.0
 tqdm>=4.67.0
 psutil 
 nvidia-ml-py3
+
+protobuf>=5.29.0,<7.0.0
+trl[peft]==1.8.0
+peft>=0.17.1,<1.0.0
+
+datasets>=4.7.0,<5.0.0
+
+
