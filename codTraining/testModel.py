@@ -27,13 +27,13 @@ model = AutoPeftModelForCausalLM.from_pretrained(
 
 model.eval()
 
+prompt=input("make a  question: ")
 
 messages = [
     {
         "role": "user",
         "content": (
-            "Genera una pregunta clara de suma para estudiantes "
-            "de segundo grado. Responde únicamente con la pregunta."
+           prompt
         ),
     }
 ]
