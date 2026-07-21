@@ -116,8 +116,8 @@ training_args = DPOConfig(
     precompute_ref_batch_size=8,
     # Configuración del entrenamiento.
     num_train_epochs=3,
-    per_device_train_batch_size=1,
-    per_device_eval_batch_size=1,
+    per_device_train_batch_size=8,
+    per_device_eval_batch_size=8,
     gradient_accumulation_steps=4,
 
     # Para adaptadores LoRA suele emplearse una tasa mayor
