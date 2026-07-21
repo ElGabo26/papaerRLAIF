@@ -21,7 +21,7 @@ tokenizer = AutoTokenizer.from_pretrained(ADAPTER_PATH)
 
 model = AutoPeftModelForCausalLM.from_pretrained(
     ADAPTER_PATH,
-    dtype=dtype,
+    torch_dtype=dtype,
     device_map="auto",
 )
 
