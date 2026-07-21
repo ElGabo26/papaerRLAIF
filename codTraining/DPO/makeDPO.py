@@ -134,7 +134,7 @@ training_args = DPOConfig(
     max_length=512,
 
     # Reducción de memoria.
-    gradient_checkpointing=False,
+    gradient_checkpointing=True,
 
     # Precisión de entrenamiento.
     bf16=use_bf16,
