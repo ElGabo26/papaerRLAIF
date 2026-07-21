@@ -24,6 +24,14 @@ set_seed(SEED)
 
 print(f"GPU: {torch.cuda.get_device_name(0)}")
 
+use_bf16 = torch.cuda.is_bf16_supported()
+
+compute_dtype = (
+    torch.bfloat16
+    if use_bf16
+    else torch.float16
+)
+
 # ============================================================
 # 2. Dataset de preferencias
 # ============================================================
