@@ -112,7 +112,8 @@ peft_config = LoraConfig(
 
 training_args = DPOConfig(
     output_dir=OUTPUT_DIR,
-
+    precompute_ref_log_probs=True,
+    precompute_ref_batch_size=8,
     # Configuración del entrenamiento.
     num_train_epochs=3,
     per_device_train_batch_size=1,
@@ -133,7 +134,7 @@ training_args = DPOConfig(
     max_length=512,
 
     # Reducción de memoria.
-    gradient_checkpointing=True,
+    gradient_checkpointing=False,
 
     # Precisión de entrenamiento.
     bf16=use_bf16,
