@@ -74,7 +74,7 @@ if tokenizer.pad_token is None:
 
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_ID,
-    dtype='auto',
+    torch_dtype="auto",
 )
 
 # Debe desactivarse durante gradient checkpointing.
