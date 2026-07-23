@@ -15,8 +15,8 @@ from transformers import AutoModel, AutoTokenizer
 # CONFIGURACIÓN
 # ============================================================
 
-MODEL_DOWLOAD= "microsoft/deberta-v3-large"
-MODEL_ROUTE="/workspace/models/deberta-v3-large"
+MODEL_DOWLOAD= "/microsoft/deberta-v3-large"
+MODEL_ROUTE="./workspace/models/deberta-v3-large"
 DATABASE_ROUTE="codTraining/cabezales/trainingCabezales/claridad.csv"
 OUTPUT_ROUTE="codTraining/cabezales/vectorBases"
 SEED =42
