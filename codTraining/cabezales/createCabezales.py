@@ -17,7 +17,7 @@ from transformers import AutoModel, AutoTokenizer
 
 MODEL_DOWLOAD= "microsoft/deberta-v3-large"
 MODEL_ROUTE="/workspace/models/"
-DATABASE_ROUTE="codTraining/cabezales/trainingCabezales/claridad.csv"
+DATABASE_ROUTE="/workspace/papaerRLAIF/codTraining/cabezales/trainingCabezales/claridad.csv"
 OUTPUT_ROUTE="codTraining/cabezales/vectorBases"
 SEED =42
 
@@ -32,7 +32,8 @@ rutaModelo=dowloadModel(MODEL_DOWLOAD,MODEL_ROUTE)
 # ============================================================
 tokenizer = AutoTokenizer.from_pretrained(
         rutaModelo,
-        local_files_only=True
+        local_files_only=True,
+        fix_mistral_regex=True
     )
 
 model = AutoModel.from_pretrained(

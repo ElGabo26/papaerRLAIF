@@ -1,26 +1,54 @@
-torch>=2.3.0
-transformers>=4.48.0
-accelerate>=1.2.0
-huggingface-hub>=0.28.0
-datasets>=3.2.0
-peft>=0.14.0
-trl>=0.15.0
-bitsandbytes>=0.45.0
-safetensors>=0.5.0
-sentencepiece>=0.2.0
-numpy>=2.0.0
-pandas>=2.2.0
-scikit-learn>=1.6.0
-evaluate>=0.4.3
-tensorboard>=2.18.0
-tqdm>=4.67.0
-psutil 
-nvidia-ml-py3
+# ============================================================
+# PYTORCH
+# RTX PRO 4000 Blackwell: usar build CUDA 12.8.
+# El índice adicional permite encontrar torch con soporte cu128.
+# ============================================================
 
-protobuf>=5.29.0,<7.0.0
-trl[peft]==1.8.0
-peft>=0.17.1,<1.0.0
+--extra-index-url https://download.pytorch.org/whl/cu128
 
-datasets>=4.7.0,<5.0.0
+torch==2.7.1
 
 
+# ============================================================
+# HUGGING FACE
+# Versiones fijadas para evitar incompatibilidades entre
+# transformers, TRL, PEFT, Accelerate y Datasets.
+# ============================================================
+
+transformers==4.48.3
+tokenizers==0.21.0
+accelerate==1.3.0
+huggingface-hub==0.28.1
+datasets==3.2.0
+peft==0.14.0
+trl==0.15.2
+
+
+# ============================================================
+# CUANTIZACIÓN Y ARCHIVOS DE MODELO
+# ============================================================
+
+bitsandbytes==0.45.2
+safetensors==0.5.2
+sentencepiece==0.2.0
+protobuf>=5.29.0,<6.0.0
+
+
+# ============================================================
+# PROCESAMIENTO Y MACHINE LEARNING
+# ============================================================
+
+numpy>=1.26.4,<2.1.0
+pandas>=2.2.0,<3.0.0
+scikit-learn>=1.6.0,<1.7.0
+evaluate==0.4.3
+
+
+# ============================================================
+# MONITOREO Y UTILIDADES
+# ============================================================
+
+tensorboard>=2.18.0,<3.0.0
+tqdm>=4.67.0,<5.0.0
+psutil>=6.1.0,<7.0.0
+nvidia-ml-py>=12.560.30
