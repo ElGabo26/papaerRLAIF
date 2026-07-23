@@ -1,3 +1,5 @@
+from os import listdir
+import joblib
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
@@ -14,18 +16,16 @@ from transformers import AutoModel, AutoTokenizer
 # ============================================================
 # CONFIGURACIÓN
 # ============================================================
-
-MODEL_DOWLOAD= "microsoft/deberta-v3-large"
-MODEL_ROUTE="/workspace/models/"
-DATABASE_ROUTE="/workspace/papaerRLAIF/codTraining/cabezales/trainingCabezales/claridad.csv"
+DATABASES_ROUTE="/workspace/papaerRLAIF/codTraining/cabezales/trainingCabezales"
 OUTPUT_ROUTE="/workspace/papaerRLAIF/codTraining/cabezales/vectorBases"
+ENCODER_ROUTE="/workspace/papaerRLAIF/codTraining/cabezales/encoders"
 SEED =42
 
 DEVICE = torch.device(
     "cuda" if torch.cuda.is_available() else "cpu"
 )
-
 rutaModelo="/workspace/models/deberta-v3-large"
+
 
 # ============================================================
 # CARGAR TOKENIZADOR Y MODELO
@@ -55,30 +55,33 @@ print("Dimensión oculta:", modelo_bert.config.hidden_size)
 # CARGA  DE  DATOS
 # ============================================================
 
-dataframe=pd.read_csv(DATABASE_ROUTE, index_col=0)
-if dataframe.shape[1]<2:
-    raise ValueError(
-        "El dataset  debe tener  dos columnas minimo")
-#creamos  la base  tensorial
-encoder=LabelEncoder()
-encoder.fit(dataframe['labels'])
-
+dataroutes=listdir(DATABASES_ROUTE)
 poolins=['cls','mean', 'max']
-tensor_dataset=preparar_dataset_vectores(
-    dataframe,'text','labels', tokenizer,modelo_bert,
-    DEVICE,'cls',256,8,encoder)
 
-indices = np.arange(
-    len(tensor_dataset)
-)
-
-torch.save(
-    tensor_dataset,
-    f"{OUTPUT_ROUTE}/claridad.pt"
-)
-
-
-
-
-
+for base in dataroutes:
+    db=pd.read_csv(f"{DATABASES_ROUTE}/{base}", index_col=0)
+    if db.shape[1]!=2 or list(db.columns)!=["text","labels"]:
+        raise ValueError(
+            "la base  de  datos no  tiene  las columnas necesarias"
+        )
+    name=base.split('.')[0]
+    encoder=LabelEncoder()
+    encoder.fit(db['labels'])
+    joblib.dump(encoder,f"{ENCODER_ROUTE}/{name}.joblib")
+    print(f"encoder {base} guarrdado")
     
+    for pool in poolins:
+        print(f"base polling {pool}")
+        tensor_dataset=preparar_dataset_vectores(
+            db,'text','labels', tokenizer,modelo_bert,
+            DEVICE,pool,256,8,encoder)
+
+        indices = np.arange(
+            len(tensor_dataset)
+                            )
+
+        torch.save(
+            tensor_dataset,
+            f"{OUTPUT_ROUTE}/{name}_{pool}.pt"
+            )
+        print(f"BASE {name}_{pool} CREADA")
