@@ -18,7 +18,7 @@ from transformers import AutoModel, AutoTokenizer
 MODEL_DOWLOAD= "microsoft/deberta-v3-large"
 MODEL_ROUTE="/workspace/models/"
 DATABASE_ROUTE="/workspace/papaerRLAIF/codTraining/cabezales/trainingCabezales/claridad.csv"
-OUTPUT_ROUTE="codTraining/cabezales/vectorBases"
+OUTPUT_ROUTE="/workspace/papaerRLAIF/codTraining/cabezales/vectorBases"
 SEED =42
 
 DEVICE = torch.device(
