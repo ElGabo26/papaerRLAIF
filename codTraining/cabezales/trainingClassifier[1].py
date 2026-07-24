@@ -43,7 +43,7 @@ criterio = nn.BCEWithLogitsLoss()
 #===============================================================
 #DEFINIMOS POOLING
 #===============================================================
-resultado=rpd.ead_csv(f"{OUTPUT_MODEL}/metadata_claridad_pooling.csv")
+resultado=read_csv(f"{OUTPUT_MODEL}/metadata_claridad_pooling.csv")
 print("resultado pooling guardado")
 groupcols=['pooling']
 metrics= ['train_f1','val_f1','train_accuracy','val_accuracy']
