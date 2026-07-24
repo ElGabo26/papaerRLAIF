@@ -719,10 +719,10 @@ def train_eval_multiclass(
                 "epoch": epoch + 1,
                 "train_loss": train_loss,
                 "train_accuracy": train_accuracy,
-                "train_macro_f1": train_macro_f1,
+                "train_f1": train_macro_f1,
                 "val_loss": val_loss,
                 "val_accuracy": val_accuracy,
-                "val_macro_f1": val_macro_f1,
+                "val_f1": val_macro_f1,
             }
             
 
