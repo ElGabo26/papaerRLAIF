@@ -67,10 +67,7 @@ configNames = [ "num_hidden_layers",
 configs=list(map(
     lambda x: dict(zip(configNames,x))
     ,a))
-configs=[x.update({"input_dim": input_dim, "device": DEVICE})
-         for x in configs]
 
-print("TOTAL CONFIGS ",len(configs))
 #funcion de  creacion  y  entrenamiento
 def defRed(config:dict, DEVICE:str, seed:int,pooling:str):
     
@@ -99,6 +96,13 @@ datos = torch.load(
             f"{DATA_ROUTE}/claridad_{pooling}.pt",
             map_location="cpu",
             weights_only=True)
+
+datos.tensors[0].shape[1]
+
+configs=[x.update({"input_dim": input_dim, "device": DEVICE})
+         for x in configs]
+
+print("TOTAL CONFIGS ",len(configs))
 
 finalBase=[]
 for seed in seeds:
