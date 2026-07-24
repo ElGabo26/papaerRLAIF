@@ -326,9 +326,10 @@ def train_eval_binary(
             "val_loss": val_loss,
             "val_accuracy": val_accuracy,
             "val_f1": val_f1,
+            'best_epoch': epoch+1
         }
 
-        results.append(data)
+        
 
         # ====================================================
         # EARLY STOPPING
@@ -339,7 +340,7 @@ def train_eval_binary(
             # Se encontró un modelo mejor.
             best_val_f1 = val_f1
             best_epoch = epoch + 1
-
+            
             # Reinicia el contador.
             epochs_without_improvement = 0
 
@@ -374,7 +375,8 @@ def train_eval_binary(
                 f"Mejor época: {best_epoch} | "
                 f"Mejor Val F1: {best_val_f1:.4f}"
             )
-
+            data['best_epoch']=best_epoch
+            results.append(data)
             break
 
     # ========================================================

@@ -31,46 +31,65 @@ num_hidden_layers_options = [0, 1, 2, 3]
 hidden_dim_options = [128, 256, 512]
 activation_options = [ "gelu",    "relu",    "silu"]
 normalization_options = [    None,    "layernorm",    "batchnorm"]
-dropout_options = [    0.0,    0.1,    0.3,    0.5,]
-poolins=['cls','mean', 'max']
+dropout_options = [    0.0,    0.1,    0.3,    0.5]
+
+parametros={
+    'seed':seeds,
+    'num_hidden_layer':num_hidden_layers_options,
+    'hidden_dim':hidden_dim_options,
+    'activation_options':activation_options,
+    'normalization':normalization_options,
+    'dropout':dropout_options    
+}
+
 # Función de pérdida para clasificación binaria.
 criterio = nn.BCEWithLogitsLoss()
 # Optimizador.
 
-result=DataFrame()
+result=[]
 for db in bases:
-    seed=seeds[0]
-    print(seed)
-    print("tipo pooling:", db.split('_')[1].split('.')[0])
-    print(db)
-    print(f"{DATA_ROUTE}/{db}")
-    datos = torch.load(
-        f"{DATA_ROUTE}/{db}",
-        map_location="cpu",
-        weights_only=True)
-    input_dim = datos.tensors[0].shape[1]
-    print(f"INPUT  DE DIMENSION: {input_dim}")
-    train, test, eval =makeDivision(datos,0.30,seed)
-    trainL, testL , evalL=createLoaders(16,train,test,eval)
-    
-    clasificador=crear_clasificador_binario(input_dim, 256,1, 'gelu','layernorm',0.3,DEVICE)
-    
-    optimizador = torch.optim.AdamW(
-    clasificador.parameters(),
-    lr=LEARNING_RATE)
-    
-    model, data=train_eval_binary(DEVICE,20, clasificador,criterio,optimizador, trainL,testL)
-    data['pooling']=db.split('_')[1].split('.')[0]
-    data['seed']=seed
-    data['hidden_dim']=256
-    data['hidden_layers']=1
-    data['norm']='layernorm'
-    data['dropout']=0.3
-    print("MODELO ENTRENADO")
-    torch.save(
-        model, f"{OUTPUT_MODEL}/testmodel_claridad_{data['pooling'].values[0]}.pt"    
-    )
-    print("MODELO GUARDADO")
-    resultado=concat([data,result])
+    pooling=db.split('_')[1].split('.')[0]
+    print(pooling)
+    for seed in seeds:
+        print(seed)
+        datos = torch.load(
+            f"{DATA_ROUTE}/{db}",
+            map_location="cpu",
+            weights_only=True)
+        input_dim = datos.tensors[0].shape[1]
+        train, test, eval =makeDivision(datos,0.30,seed)
+        trainL, testL , evalL=createLoaders(16,train,test,eval)
+        for hidden_dim in hidden_dim_options:
+            config = {
+                "input_dim": input_dim,
+                "hidden_dim": hidden_dim,
+                "num_hidden_layers": 1,
+                "activation": "gelu",
+                "normalization": "layernorm",
+                "dropout": 0.30,
+                "device": DEVICE,
+            }
 
-resultado.to_csv(f"{OUTPUT_MODEL}/testmodel_metrics_claridad.csv")
+            clasificador=crear_clasificador_binario(**config)
+            
+
+            optimizador = torch.optim.AdamW(
+            clasificador.parameters(),
+            lr=LEARNING_RATE)
+
+            model, data=train_eval_binary(DEVICE,20, clasificador,criterio,optimizador, trainL,testL,umbral=0.5,patience=3)
+            
+            config['seed']=seed
+            data['pooling']=pooling
+            for i,j in config.items():
+                data[i]=j
+            name=f'model_claridad_{pooling}_{seed}_{hidden_dim}.pt'
+            torch.save(
+                model, f"{OUTPUT_MODEL}/{name}"    
+            )
+            result.append(data)
+            print("MODELO GUARDADO")
+        
+
+resultado=concat(result)
+resultado.to_csv(f"{OUTPUT_MODEL}/metadata_claridad_hidden_dim.csv")
