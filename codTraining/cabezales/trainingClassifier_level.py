@@ -25,6 +25,7 @@ OUTPUT_MODEL="/workspace/papaerRLAIF/codTraining/cabezales/models"
 bases=listdir(DATA_ROUTE)
 #bases  de  level
 bases=[x for x in  bases if 'level' in x]
+print(bases)
 
 
 
