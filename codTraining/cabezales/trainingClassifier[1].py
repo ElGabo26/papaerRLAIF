@@ -68,6 +68,8 @@ configs=list(map(
     lambda x: dict(zip(configNames,x))
     ,a))
 
+print(DEVICE)
+
 #funcion de  creacion  y  entrenamiento
 def defRed(config:dict, DEVICE:str, seed:int,pooling:str):
     
@@ -109,7 +111,7 @@ for seed in seeds:
     print(seed)
     input_dim = datos.tensors[0].shape[1]
     train, test, eval =makeDivision(datos,0.30,seed)
-    trainL, testL , evalL=createLoaders(256,train,test,eval)
+    trainL, testL , evalL=createLoaders(512,train,test,eval)
     for batch in batchConfig:
         
         name=f"models_seed_{seed}_batch_{batchConfig.index(batch) +1}"
