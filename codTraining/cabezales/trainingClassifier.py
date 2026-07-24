@@ -39,6 +39,8 @@ for db in bases:
     seed=seeds[0]
     print(seed)
     print("tipo pooling:", db.split('_')[1].split('.')[0])
+    print(db)
+    print(f"{DATA_ROUTE}/{db}")
     datos = torch.load(
         f"{DATA_ROUTE}/{db}",
         map_location="cpu",
