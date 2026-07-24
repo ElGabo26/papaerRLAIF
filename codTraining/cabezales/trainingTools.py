@@ -354,12 +354,11 @@ def train_eval_binary(
         # Detener cuando se alcanza patience.
         if epochs_without_improvement >= patience:
 
-
             print(
                 f"Mejor época: {best_epoch} | "
                 f"Mejor Val F1: {best_val_f1:.4f}"
             )
-            
+            results.append(data)
             break
         
        
