@@ -837,7 +837,7 @@ def makeDivision(tensor_dataset: TensorDataset, test_size:float, seed:int = 42):
     train_indices, temp_indices=train_test_split(idx,test_size=test_size
                                              ,random_state=seed
                                              ,stratify=labels_numpy)
-    test_indices, eval_indices=train_test_split(idx,test_size=0.50
+    test_indices, eval_indices=train_test_split(idx[temp_indices],test_size=0.50
                                              ,random_state=seed
                                              ,stratify=labels_numpy[temp_indices])
     train_dataset = Subset(
