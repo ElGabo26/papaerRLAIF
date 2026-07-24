@@ -29,7 +29,7 @@ print(bases)
 
 
 
-seeds=[   123,    2024]
+seeds=[42,   123,    2024]
 num_hidden_layers_options = [0, 1, 2, 3]
 hidden_dim_options = [128, 256, 512]
 activation_options = [ "gelu",    "relu",    "silu"]
@@ -45,10 +45,11 @@ criterio = nn.BCEWithLogitsLoss()
 #DEFINIMOS POOLING
 #===============================================================
 result=[]
-for db in bases:
-    pooling=db.split('_')[1].split('.')[0]
-    print(pooling)
-    with tqdm(total=27) as barra:
+with tqdm(total=3*len(hidden_dim_options)*len(seeds)) as barra:
+    for db in bases:
+        pooling=db.split('_')[1].split('.')[0]
+        print(pooling)
+
         for seed in seeds:
             print(seed)
             datos = torch.load(
