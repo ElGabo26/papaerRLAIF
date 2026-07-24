@@ -843,18 +843,27 @@ def  createLoaders(BATCH_SIZE,train_dataset,
         train_dataset,
         batch_size=BATCH_SIZE,
         shuffle=True,
+        num_workers=4,
+        pin_memory=True,
+        persistent_workers=True
     )
 
     validation_loader = DataLoader(
         validation_dataset,
         batch_size=BATCH_SIZE,
         shuffle=False,
+        num_workers=4,
+        pin_memory=True,
+        persistent_workers=True
     )
 
     test_loader = DataLoader(
         test_dataset,
         batch_size=BATCH_SIZE,
         shuffle=False,
+        num_workers=4,
+        pin_memory=True,
+        persistent_workers=True
     )
     
     return train_loader, validation_loader, test_loader
