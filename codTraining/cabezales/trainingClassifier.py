@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+from torch.utils.data import TensorDataset
+torch.serialization.add_safe_globals([TensorDataset])
 from os import listdir
 from pandas import DataFrame, concat
 from tools import (crear_clasificador_binario, 
@@ -21,6 +23,7 @@ OUTPUT_MODEL="/workspace/papaerRLAIF/codTraining/cabezales/models"
 bases=listdir(DATA_ROUTE)
 #bases  de  claridad
 bases=[x for x in  bases if 'claridad']
+
 
 
 seeds=[ 42,    123,    2024]
