@@ -874,7 +874,7 @@ def getbest(db:pd.DataFrame,groupcols: list,metric_cols:list, loss_columns:list=
         f"{col}":(col ,'mean')
         for col in metric_cols
     }
-    tolenrance=1e-2
+    tolenrance=4e-2
     db2=db1[db1['epoch']==db1['best_epoch']].copy()
     #db2=db1.copy()
     db3=db2.groupby(by=groupcols)[metric_cols].agg(**agregaciones).reset_index()
