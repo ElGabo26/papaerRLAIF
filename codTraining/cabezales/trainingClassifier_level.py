@@ -48,7 +48,7 @@ result=[]
 with tqdm(total=3*len(hidden_dim_options)*len(seeds)) as barra:
     for db in bases:
         pooling=db.split('_')[1].split('.')[0]
-        print(pooling)
+        
 
         for seed in seeds:
             print(seed)
@@ -89,7 +89,7 @@ with tqdm(total=3*len(hidden_dim_options)*len(seeds)) as barra:
                 barra.update(1)
                 
                 
-                print(f"ENTRANAMIENTO COMPLETADO")
+                
         
 
 resultado=concat(result)
