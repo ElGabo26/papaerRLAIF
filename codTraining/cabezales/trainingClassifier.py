@@ -22,7 +22,7 @@ OUTPUT_MODEL="/workspace/papaerRLAIF/codTraining/cabezales/models"
 
 bases=listdir(DATA_ROUTE)
 #bases  de  claridad
-bases=[x for x in  bases if 'claridad']
+bases=[x for x in  bases if 'claridad' in x]
 
 
 
