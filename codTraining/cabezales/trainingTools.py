@@ -373,7 +373,7 @@ def train_eval_binary(
         results
     )
     if best_model_state is not None:
-        resultados['best_epoch']= best_epoch
+        #resultados['best_epoch']= best_epoch
         clasificador.load_state_dict(
             best_model_state
         )

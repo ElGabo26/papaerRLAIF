@@ -91,7 +91,7 @@ resultado.to_csv(f"{OUTPUT_MODEL}/metadata_claridad_pooling.csv")
 print("resultado pooling guardado")
 groupcols=['pooling']
 metrics= ['train_f1','val_f1','train_accuracy','val_accuracy']
-pooling=getbest(db,groupcols,metrics)
+pooling=getbest(resultado,groupcols,metrics)
 pooling=pooling['pooling']
 print("POOLING DEFINIDO: ", pooling)
 
