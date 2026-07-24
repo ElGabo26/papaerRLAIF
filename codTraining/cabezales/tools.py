@@ -301,99 +301,40 @@ def obtener_salida_modelo(
     return outputs, tokens
 
 
-def crear_red_clasificadora(
+def crear_clasificador_multiclase(
     input_dim: int,
     hidden_dim: int,
     num_classes: int,
+    num_hidden_layers: int = 1,
+    activation: str = "gelu",
+    normalization: str | None = "layernorm",
     dropout: float = 0.30,
     device: torch.device | None = None,
 ) -> nn.Sequential:
     """
-    Construye una red neuronal multiclase.
+    Construye dinámicamente una red neuronal multiclase.
 
-    Arquitectura:
+    Arquitectura general
+    --------------------
+    Cuando num_hidden_layers >= 1:
 
         Linear(input_dim, hidden_dim)
-        LayerNorm(hidden_dim)
-        GELU
-        Dropout(dropout)
+        [Normalización]
+        [Activación]
+        Dropout
+
+        Linear(hidden_dim, hidden_dim)
+        [Normalización]
+        [Activación]
+        Dropout
+
+        ...
+
         Linear(hidden_dim, num_classes)
 
-    Parámetros
-    ----------
-    input_dim:
-        Dimensión del vector generado por el encoder.
+    Cuando num_hidden_layers == 0:
 
-        Para microsoft/deberta-v3-large:
-            input_dim = 1024
-
-    hidden_dim:
-        Número de neuronas de la capa oculta.
-
-    num_classes:
-        Número de categorías del problema.
-
-    dropout:
-        Probabilidad de desactivar una activación durante
-        el entrenamiento.
-
-    device:
-        Dispositivo al que se moverá la red.
-
-    Retorna
-    -------
-    Red clasificadora creada con nn.Sequential.
-    """
-
-    clasificador = nn.Sequential(
-        # [batch_size, input_dim]
-        #              ↓
-        # [batch_size, hidden_dim]
-        nn.Linear(
-            in_features=input_dim,
-            out_features=hidden_dim,
-        ),
-
-        # Normalización de las activaciones de la capa oculta.
-        nn.LayerNorm(hidden_dim),
-
-        # Función de activación no lineal.
-        nn.GELU(),
-
-        # Regularización para reducir el sobreajuste.
-        nn.Dropout(p=dropout),
-
-        # [batch_size, hidden_dim]
-        #              ↓
-        # [batch_size, num_classes]
-        nn.Linear(
-            in_features=hidden_dim,
-            out_features=num_classes,
-        ),
-    )
-
-    if device is not None:
-        clasificador = clasificador.to(device)
-
-    return clasificador
-
-
-def crear_clasificador_binario(
-    input_dim: int,
-    hidden_dim: int = 256,
-    dropout: float = 0.30,
-    device: torch.device | None = None,
-) -> nn.Sequential:
-    """
-    Construye una red neuronal para clasificación binaria.
-
-    Arquitectura
-    ------------
-    Linear(input_dim, hidden_dim)
-    LayerNorm(hidden_dim)
-    GELU
-    Dropout(dropout)
-    Linear(hidden_dim, 1)
+        Linear(input_dim, num_classes)
 
     Parámetros
     ----------
@@ -401,24 +342,99 @@ def crear_clasificador_binario(
         Dimensión del vector producido por el encoder.
 
         Ejemplo para microsoft/deberta-v3-large:
+
             input_dim = 1024
 
     hidden_dim:
-        Número de neuronas de la capa oculta.
+        Número de neuronas de cada capa oculta.
+
+        Ejemplos:
+
+            128, 256, 512
+
+        Este parámetro no se utiliza cuando:
+
+            num_hidden_layers = 0
+
+    num_classes:
+        Número de categorías del problema.
+
+        La capa final generará un logit por clase.
+
+    num_hidden_layers:
+        Número de capas ocultas del clasificador.
+
+        Valores posibles:
+
+            0:
+                Clasificador lineal directo.
+
+                Linear(input_dim, num_classes)
+
+            1:
+                Una capa oculta.
+
+                Linear(input_dim, hidden_dim)
+                ...
+                Linear(hidden_dim, num_classes)
+
+            2 o más:
+                Agrega capas adicionales con dimensiones:
+
+                Linear(hidden_dim, hidden_dim)
+
+    activation:
+        Función de activación utilizada después de cada
+        capa lineal oculta.
+
+        Valores admitidos:
+
+            "gelu"
+            "relu"
+            "silu"
+            "tanh"
+            "leaky_relu"
+
+    normalization:
+        Tipo de normalización aplicado después de cada
+        capa lineal oculta.
+
+        Valores admitidos:
+
+            "layernorm":
+                Aplica nn.LayerNorm(hidden_dim).
+
+            "batchnorm":
+                Aplica nn.BatchNorm1d(hidden_dim).
+
+            None o "none":
+                No aplica normalización.
 
     dropout:
         Probabilidad de desactivar activaciones durante
         el entrenamiento.
 
+        Debe encontrarse en el intervalo:
+
+            0 <= dropout < 1
+
     device:
-        Dispositivo donde se almacenará el clasificador:
-        CPU o GPU.
+        Dispositivo al que se moverá la red.
+
+        Ejemplos:
+
+            torch.device("cuda")
+            torch.device("cpu")
 
     Retorna
     -------
     nn.Sequential:
-        Clasificador que genera un único logit por observación.
+        Clasificador multiclase construido dinámicamente.
     """
+
+    # ========================================================
+    # 1. VALIDACIONES
+    # ========================================================
 
     if input_dim <= 0:
         raise ValueError(
@@ -430,39 +446,456 @@ def crear_clasificador_binario(
             "hidden_dim debe ser mayor que cero."
         )
 
+    if num_classes < 2:
+        raise ValueError(
+            "num_classes debe ser igual o mayor que dos."
+        )
+
+    if num_hidden_layers < 0:
+        raise ValueError(
+            "num_hidden_layers no puede ser negativo."
+        )
+
     if not 0.0 <= dropout < 1.0:
         raise ValueError(
             "dropout debe encontrarse en el intervalo [0, 1)."
         )
 
-    clasificador = nn.Sequential(
-        # [batch_size, input_dim]
-        #              ↓
+    activation = activation.lower()
+
+    if normalization is not None:
+        normalization = normalization.lower()
+
+    # ========================================================
+    # 2. SELECCIONAR LA FUNCIÓN DE ACTIVACIÓN
+    # ========================================================
+
+    activation_functions = {
+        "gelu": nn.GELU,
+        "relu": nn.ReLU,
+        "silu": nn.SiLU,
+        "tanh": nn.Tanh,
+        "leaky_relu": nn.LeakyReLU,
+    }
+
+    if activation not in activation_functions:
+        raise ValueError(
+            f"Función de activación no válida: {activation}. "
+            f"Opciones disponibles: "
+            f"{list(activation_functions.keys())}"
+        )
+
+    # Se guarda la clase de la función de activación.
+    # Se creará una instancia nueva en cada capa oculta.
+    activation_class = activation_functions[activation]
+
+    # ========================================================
+    # 3. VALIDAR EL TIPO DE NORMALIZACIÓN
+    # ========================================================
+
+    valid_normalizations = {
+        "layernorm",
+        "batchnorm",
+        "none",
+        None,
+    }
+
+    if normalization not in valid_normalizations:
+        raise ValueError(
+            "normalization debe ser 'layernorm', "
+            "'batchnorm', 'none' o None."
+        )
+
+    # ========================================================
+    # 4. CONSTRUIR LAS CAPAS
+    # ========================================================
+
+    layers = []
+
+    # --------------------------------------------------------
+    # CASO A: CLASIFICADOR LINEAL SIN CAPAS OCULTAS
+    # --------------------------------------------------------
+
+    if num_hidden_layers == 0:
+
+        layers.append(
+            nn.Linear(
+                in_features=input_dim,
+                out_features=num_classes,
+            )
+        )
+
+    # --------------------------------------------------------
+    # CASO B: CLASIFICADOR CON UNA O MÁS CAPAS OCULTAS
+    # --------------------------------------------------------
+
+    else:
+
+        # Dimensión de entrada de la primera capa.
+        current_input_dim = input_dim
+
+        for layer_index in range(num_hidden_layers):
+
+            # Transformación lineal.
+            #
+            # Primera capa:
+            #     input_dim -> hidden_dim
+            #
+            # Capas posteriores:
+            #     hidden_dim -> hidden_dim
+            layers.append(
+                nn.Linear(
+                    in_features=current_input_dim,
+                    out_features=hidden_dim,
+                )
+            )
+
+            # Normalización opcional.
+            if normalization == "layernorm":
+
+                layers.append(
+                    nn.LayerNorm(hidden_dim)
+                )
+
+            elif normalization == "batchnorm":
+
+                layers.append(
+                    nn.BatchNorm1d(hidden_dim)
+                )
+
+            # Agregar una instancia independiente
+            # de la función de activación.
+            layers.append(
+                activation_class()
+            )
+
+            # Regularización.
+            #
+            # Si dropout = 0, se omite la capa.
+            if dropout > 0:
+
+                layers.append(
+                    nn.Dropout(p=dropout)
+                )
+
+            # Después de la primera capa, todas las capas
+            # reciben vectores de dimensión hidden_dim.
+            current_input_dim = hidden_dim
+
+        # Capa final.
+        #
+        # Genera un logit por clase:
+        #
         # [batch_size, hidden_dim]
-        nn.Linear(
-            in_features=input_dim,
-            out_features=hidden_dim,
-        ),
-
-        nn.LayerNorm(hidden_dim),
-
-        nn.GELU(),
-
-        nn.Dropout(p=dropout),
-
-        # [batch_size, hidden_dim]
         #              ↓
-        # [batch_size, 1]
-        nn.Linear(
-            in_features=hidden_dim,
-            out_features=1,
-        ),
-    )
+        # [batch_size, num_classes]
+        layers.append(
+            nn.Linear(
+                in_features=hidden_dim,
+                out_features=num_classes,
+            )
+        )
+
+    # ========================================================
+    # 5. CREAR EL MODELO SECUENCIAL
+    # ========================================================
+
+    clasificador = nn.Sequential(*layers)
+
+    # ========================================================
+    # 6. MOVER EL MODELO AL DISPOSITIVO
+    # ========================================================
 
     if device is not None:
         clasificador = clasificador.to(device)
 
     return clasificador
+
+
+def crear_clasificador_binario(
+    input_dim: int,
+    hidden_dim: int = 256,
+    num_hidden_layers: int = 1,
+    activation: str = "gelu",
+    normalization: str | None = "layernorm",
+    dropout: float = 0.30,
+    device: torch.device | None = None,
+) -> nn.Sequential:
+    """
+    Construye dinámicamente una red neuronal para clasificación binaria.
+
+    Arquitectura general
+    --------------------
+    Cuando num_hidden_layers >= 1:
+
+        Linear(input_dim, hidden_dim)
+        [Normalización]
+        [Activación]
+        Dropout
+
+        Linear(hidden_dim, hidden_dim)
+        [Normalización]
+        [Activación]
+        Dropout
+
+        ...
+
+        Linear(hidden_dim, 1)
+
+    Cuando num_hidden_layers == 0:
+
+        Linear(input_dim, 1)
+
+    Parámetros
+    ----------
+    input_dim:
+        Dimensión del vector generado por el encoder.
+
+        Ejemplo para microsoft/deberta-v3-large:
+
+            input_dim = 1024
+
+    hidden_dim:
+        Número de neuronas de cada capa oculta.
+
+        Ejemplos:
+
+            128, 256, 512
+
+        No se utiliza cuando:
+
+            num_hidden_layers = 0
+
+    num_hidden_layers:
+        Número de capas ocultas.
+
+        Valores posibles:
+
+            0:
+                Clasificador lineal sin capas ocultas.
+
+            1:
+                Una capa oculta.
+
+            2 o más:
+                Varias capas ocultas.
+
+    activation:
+        Función de activación aplicada después de cada
+        capa lineal oculta.
+
+        Valores admitidos:
+
+            "gelu"
+            "relu"
+            "silu"
+            "tanh"
+            "leaky_relu"
+
+    normalization:
+        Tipo de normalización aplicado después de cada
+        capa lineal oculta.
+
+        Valores admitidos:
+
+            "layernorm"
+            "batchnorm"
+            "none"
+            None
+
+    dropout:
+        Probabilidad de desactivar activaciones durante
+        el entrenamiento.
+
+        Debe cumplir:
+
+            0 <= dropout < 1
+
+    device:
+        Dispositivo donde se almacenará el clasificador.
+
+        Ejemplos:
+
+            torch.device("cuda")
+            torch.device("cpu")
+
+    Retorna
+    -------
+    nn.Sequential:
+        Clasificador binario que genera un único logit
+        por observación.
+    """
+
+    # ========================================================
+    # 1. VALIDACIONES
+    # ========================================================
+
+    if input_dim <= 0:
+        raise ValueError(
+            "input_dim debe ser mayor que cero."
+        )
+
+    if hidden_dim <= 0:
+        raise ValueError(
+            "hidden_dim debe ser mayor que cero."
+        )
+
+    if num_hidden_layers < 0:
+        raise ValueError(
+            "num_hidden_layers no puede ser negativo."
+        )
+
+    if not 0.0 <= dropout < 1.0:
+        raise ValueError(
+            "dropout debe encontrarse en el intervalo [0, 1)."
+        )
+
+    activation = activation.lower()
+
+    if normalization is not None:
+        normalization = normalization.lower()
+
+    # ========================================================
+    # 2. FUNCIONES DE ACTIVACIÓN DISPONIBLES
+    # ========================================================
+
+    activation_functions = {
+        "gelu": nn.GELU,
+        "relu": nn.ReLU,
+        "silu": nn.SiLU,
+        "tanh": nn.Tanh,
+        "leaky_relu": nn.LeakyReLU,
+    }
+
+    if activation not in activation_functions:
+        raise ValueError(
+            f"Función de activación no válida: {activation}. "
+            f"Opciones disponibles: "
+            f"{list(activation_functions.keys())}"
+        )
+
+    activation_class = activation_functions[activation]
+
+    # ========================================================
+    # 3. TIPOS DE NORMALIZACIÓN DISPONIBLES
+    # ========================================================
+
+    valid_normalizations = {
+        "layernorm",
+        "batchnorm",
+        "none",
+        None,
+    }
+
+    if normalization not in valid_normalizations:
+        raise ValueError(
+            "normalization debe ser 'layernorm', "
+            "'batchnorm', 'none' o None."
+        )
+
+    # ========================================================
+    # 4. CONSTRUCCIÓN DINÁMICA DE LA ARQUITECTURA
+    # ========================================================
+
+    layers = []
+
+    # --------------------------------------------------------
+    # CASO A: SIN CAPAS OCULTAS
+    # --------------------------------------------------------
+
+    if num_hidden_layers == 0:
+
+        # Clasificador lineal directo:
+        #
+        # [batch_size, input_dim]
+        #              ↓
+        # [batch_size, 1]
+        layers.append(
+            nn.Linear(
+                in_features=input_dim,
+                out_features=1,
+            )
+        )
+
+    # --------------------------------------------------------
+    # CASO B: UNA O MÁS CAPAS OCULTAS
+    # --------------------------------------------------------
+
+    else:
+
+        current_input_dim = input_dim
+
+        for layer_index in range(num_hidden_layers):
+
+            # Primera capa:
+            #
+            # input_dim -> hidden_dim
+            #
+            # Capas posteriores:
+            #
+            # hidden_dim -> hidden_dim
+            layers.append(
+                nn.Linear(
+                    in_features=current_input_dim,
+                    out_features=hidden_dim,
+                )
+            )
+
+            # Normalización opcional.
+            if normalization == "layernorm":
+
+                layers.append(
+                    nn.LayerNorm(hidden_dim)
+                )
+
+            elif normalization == "batchnorm":
+
+                layers.append(
+                    nn.BatchNorm1d(hidden_dim)
+                )
+
+            # Función de activación.
+            layers.append(
+                activation_class()
+            )
+
+            # Regularización.
+            if dropout > 0:
+
+                layers.append(
+                    nn.Dropout(p=dropout)
+                )
+
+            # Las siguientes capas reciben hidden_dim.
+            current_input_dim = hidden_dim
+
+        # Capa final binaria.
+        #
+        # [batch_size, hidden_dim]
+        #              ↓
+        # [batch_size, 1]
+        layers.append(
+            nn.Linear(
+                in_features=hidden_dim,
+                out_features=1,
+            )
+        )
+
+    # ========================================================
+    # 5. CREAR EL MODELO SECUENCIAL
+    # ========================================================
+
+    clasificador = nn.Sequential(*layers)
+
+    # ========================================================
+    # 6. MOVER EL MODELO AL DISPOSITIVO
+    # ========================================================
+
+    if device is not None:
+        clasificador = clasificador.to(device)
+
+    return clasificador
+
 
 
 def preparar_dataset_vectores(
@@ -743,28 +1176,4 @@ def preparar_dataset_vectores(
 
     return tensor_dataset
     
-def makeDivision(tensor_dataset: TensorDataset, test_size:float, seed:int = 42):
-    labels_numpy = tensor_dataset.tensors[1].cpu().numpy()
-    idx =np.arange(len(tensor_dataset))
-    train_indices, temp_indices=train_test_split(idx,test_size=test_size
-                                             ,random_state=seed
-                                             ,stratify=labels_numpy)
-    test_indices, eval_indices=train_test_split(idx,test_size=0.50
-                                             ,random_state=seed
-                                             ,stratify=labels_numpy[temp_indices])
-    train_dataset = Subset(
-    tensor_dataset,
-    train_indices,
-)
-
-    validation_dataset = Subset(
-    tensor_dataset,
-    eval_indices,
-)
-
-    test_dataset = Subset(
-    tensor_dataset,
-    test_indices,
-)
-    return train_dataset, test_dataset, validation_dataset
     
