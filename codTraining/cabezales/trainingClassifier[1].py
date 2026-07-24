@@ -28,7 +28,7 @@ bases=[x for x in  bases if 'claridad' in x]
 
 
 
-seeds=[ 42,    123,    2024]
+seeds=[   123,    2024]
 num_hidden_layers_options = [0, 1, 2, 3]
 hidden_dim_options = [128, 256, 512]
 activation_options = [ "gelu",    "relu",    "silu"]
@@ -82,9 +82,10 @@ def defRed(config:dict, DEVICE:str, seed:int,pooling:str):
                                     optimizador, 
                                     trainL,testL,umbral=0.5,patience=3)
     
-    config['seed']=seed
+    config1=config.copy()
+    config1['seed']=seed
     data['pooling']=pooling
-    for i,j in config.items():
+    for i,j in config1.items():
         data[i]=j
     barra.update(1)
     
@@ -120,10 +121,10 @@ for seed in seeds:
             resutlBatch=list(map(
                 lambda x: defRed(x,DEVICE,seed, pooling)
             , batch))
-            resultB=concat(resutlBatch)
-            resultB.to_csv(f"{OUTPUT_MODEL}/{name}.csv")
-            finalBase.append(resultB)
-            print(name, "GUARDADO")
+        resultB=concat(resutlBatch)
+        resultB.to_csv(f"{OUTPUT_MODEL}/{name}.csv")
+        finalBase.append(resultB)
+        print(name, "GUARDADO")
 
 finalBase=concat(finalBase)
 finalBase.to_csv(f"{OUTPUT_MODEL}/finalBase.csv")
