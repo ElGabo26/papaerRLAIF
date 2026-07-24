@@ -504,8 +504,7 @@ def train_eval_multiclass(
 
     for epoch in range(NUM_EPOCHS):
 
-        print(f"\nEPOCH: {epoch + 1}")
-
+        
         # ====================================================
         # ENTRENAMIENTO
         # ====================================================
@@ -713,18 +712,10 @@ def train_eval_multiclass(
         # RESULTADOS DE LA ÉPOCA
         # ====================================================
 
-        print(
-            f"Época {epoch + 1}/{NUM_EPOCHS} | "
-            f"Train loss: {train_loss:.4f} | "
-            f"Train accuracy: {train_accuracy:.4f} | "
-            f"Train macro-F1: {train_macro_f1:.4f} | "
-            f"Val loss: {val_loss:.4f} | "
-            f"Val accuracy: {val_accuracy:.4f} | "
-            f"Val macro-F1: {val_macro_f1:.4f}"
-        )
+        
 
-        results.append(
-            {
+        
+        data ={
                 "epoch": epoch + 1,
                 "train_loss": train_loss,
                 "train_accuracy": train_accuracy,
@@ -733,7 +724,7 @@ def train_eval_multiclass(
                 "val_accuracy": val_accuracy,
                 "val_macro_f1": val_macro_f1,
             }
-        )
+            
 
         # ====================================================
         # EARLY STOPPING
@@ -759,35 +750,20 @@ def train_eval_multiclass(
                 clasificador.state_dict()
             )
 
-            print(
-                f"Mejora detectada | "
-                f"Mejor Val macro-F1: "
-                f"{best_val_macro_f1:.4f}"
-            )
+           
 
         else:
 
             epochs_without_improvement += 1
 
-            print(
-                "Épocas sin mejora: "
-                f"{epochs_without_improvement}/{patience}"
-            )
+           
 
         # Detener cuando se alcance la paciencia.
         if epochs_without_improvement >= patience:
 
-            print(
-                "\nEarly stopping activado."
-            )
-
-            print(
-                f"Mejor época: {best_epoch} | "
-                f"Mejor Val macro-F1: "
-                f"{best_val_macro_f1:.4f}"
-            )
-
+            results.append(data)
             break
+        results.append(data)
 
     # ========================================================
     # RESTAURAR EL MEJOR MODELO
@@ -806,6 +782,7 @@ def train_eval_multiclass(
     resultados = pd.DataFrame(
         results
     )
+    resultados['best_epoch']= epoch+1
 
     return clasificador, resultados
 
