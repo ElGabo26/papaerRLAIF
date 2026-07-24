@@ -1,15 +1,17 @@
 import torch
 import torch.nn as nn
+from tqdm import tqdm
+from itertools import product
 from torch.utils.data import TensorDataset
 torch.serialization.add_safe_globals([TensorDataset])
 from os import listdir
 from pandas import DataFrame, concat
 from tools import (crear_clasificador_binario, 
-                   crear_clasificador_multiclase)
+                   crear_clasificador_multiclase, batch_n)
 
 from trainingTools import (
     makeDivision, createLoaders, 
-    train_eval_multiclass, train_eval_binary
+    train_eval_multiclass, train_eval_binary, getbest
 )
 
 DEVICE = torch.device(
@@ -33,19 +35,14 @@ activation_options = [ "gelu",    "relu",    "silu"]
 normalization_options = [    None,    "layernorm",    "batchnorm"]
 dropout_options = [    0.0,    0.1,    0.3,    0.5]
 
-parametros={
-    'seed':seeds,
-    'num_hidden_layer':num_hidden_layers_options,
-    'hidden_dim':hidden_dim_options,
-    'activation_options':activation_options,
-    'normalization':normalization_options,
-    'dropout':dropout_options    
-}
 
 # Función de pérdida para clasificación binaria.
 criterio = nn.BCEWithLogitsLoss()
 # Optimizador.
 
+#===============================================================
+#DEFINIMOS POOLING
+#===============================================================
 result=[]
 for db in bases:
     pooling=db.split('_')[1].split('.')[0]
@@ -83,13 +80,97 @@ for db in bases:
             data['pooling']=pooling
             for i,j in config.items():
                 data[i]=j
-            name=f'model_claridad_{pooling}_{seed}_{hidden_dim}.pt'
-            torch.save(
-                model, f"{OUTPUT_MODEL}/{name}"    
-            )
+            
             result.append(data)
-            print("MODELO GUARDADO")
+            
+            print(f"ENTRANAMIENTO COMPLETADO")
         
 
 resultado=concat(result)
-resultado.to_csv(f"{OUTPUT_MODEL}/metadata_claridad_hidden_dim.csv")
+resultado.to_csv(f"{OUTPUT_MODEL}/metadata_claridad_pooling.csv")
+print("resultado pooling guardado")
+groupcols=['pooling']
+metrics= ['train_f1','val_f1','train_accuracy','val_accuracy']
+pooling=getbest(db,groupcols,metrics)
+pooling=pooling['pooling']
+print("POOLING DEFINIDO: ", pooling)
+
+#===============================================================
+#DEFINIMOS ARQUITECTURA RED
+#===============================================================
+
+#generamos  las distintas configuraciones
+a=list(product(num_hidden_layers_options,hidden_dim_options,
+               activation_options,normalization_options,
+               dropout_options))
+configNames = [ "num_hidden_layers",
+                "hidden_dim",
+                "activation",
+                "normalization",
+                "dropout"]
+configs=list(map(
+    lambda x: dict(zip(configNames,x))
+    ,a))
+configs=[x.update({"input_dim": input_dim, "device": DEVICE})
+         for x in configs]
+#funcion de  creacion  y  entrenamiento
+def defRed(config:dict, DEVICE:str, seed:int,pooling:str):
+    
+    clasificador=crear_clasificador_binario(**config)
+    optimizador = torch.optim.AdamW(
+    clasificador.parameters(),
+    lr=LEARNING_RATE)
+
+    model, data=train_eval_binary(DEVICE,20, clasificador,criterio,
+                                    optimizador, 
+                                    trainL,testL,umbral=0.5,patience=3)
+    
+    config['seed']=seed
+    data['pooling']=pooling
+    for i,j in config.items():
+        data[i]=j
+    barra.update(1)
+    
+    return data
+
+batchConfig=batch_n(configs,8)
+
+#cargamos los  datos
+print("DEFINIMOS ARQUITECTURA RED")
+datos = torch.load(
+            f"{DATA_ROUTE}/claridad_{pooling}",
+            map_location="cpu",
+            weights_only=True)
+
+finalBase=[]
+for seed in seeds:
+    print(seed)
+    input_dim = datos.tensors[0].shape[1]
+    train, test, eval =makeDivision(datos,0.30,seed)
+    trainL, testL , evalL=createLoaders(16,train,test,eval)
+    for batch in batchConfig:
+        name=f"models_seed_{seed}_batch_{batchConfig.index(batch) +1}"
+        with tqdm(total=len(batch)) as barra:
+            
+            resutlBatch=list(map(
+                lambda x: defRed(x,DEVICE,seed, pooling)
+            , batch))
+            resultB=concat(resutlBatch)
+            resultB.to_csv(f"{OUTPUT_MODEL}/{name}.csv")
+            finalBase.append(resultB)
+            print(name, "GUARDADO")
+
+finalBase=concat(finalBase)
+finalBase.to_csv(f"{OUTPUT_MODEL}/finalBase.csv")
+print("finalBaseCreada")
+        
+    
+    
+    
+    
+    
+    
+    
+
+resultado=concat(result)
+resultado.to_csv(f"{OUTPUT_MODEL}/metadata_claridad_pooling.csv")

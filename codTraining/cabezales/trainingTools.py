@@ -308,15 +308,6 @@ def train_eval_binary(
         # RESULTADOS DE LA ÉPOCA
         # ====================================================
 
-        print(
-            f"Época {epoch + 1}/{NUM_EPOCHS} | "
-            f"Train loss: {train_loss:.4f} | "
-            f"Train accuracy: {train_accuracy:.4f} | "
-            f"Train F1: {train_f1:.4f} | "
-            f"Val loss: {val_loss:.4f} | "
-            f"Val accuracy: {val_accuracy:.4f} | "
-            f"Val F1: {val_f1:.4f}"
-        )
 
         data = {
             "epoch": epoch + 1,
@@ -326,7 +317,6 @@ def train_eval_binary(
             "val_loss": val_loss,
             "val_accuracy": val_accuracy,
             "val_f1": val_f1,
-            'best_epoch': epoch+1
         }
 
         
@@ -359,32 +349,31 @@ def train_eval_binary(
             # No hubo mejora en esta época.
             epochs_without_improvement += 1
 
-            print(
-                "Épocas sin mejora: "
-                f"{epochs_without_improvement}/{patience}"
-            )
+            
 
         # Detener cuando se alcanza patience.
         if epochs_without_improvement >= patience:
 
-            print(
-                "\nEarly stopping activado."
-            )
 
             print(
                 f"Mejor época: {best_epoch} | "
                 f"Mejor Val F1: {best_val_f1:.4f}"
             )
-            data['best_epoch']=best_epoch
-            results.append(data)
+            
             break
+        
+       
+        results.append(data)
 
     # ========================================================
     # RESTAURAR EL MEJOR MODELO
     # ========================================================
 
+    resultados = pd.DataFrame(
+        results
+    )
     if best_model_state is not None:
-
+        resultados['best_epoch']= best_epoch
         clasificador.load_state_dict(
             best_model_state
         )
@@ -392,10 +381,8 @@ def train_eval_binary(
         clasificador = clasificador.to(
             DEVICE
         )
-
-    resultados = pd.DataFrame(
-        results
-    )
+    resultados['best_epoch']= epoch+1
+    
 
     return clasificador, resultados
 
@@ -881,3 +868,22 @@ def  createLoaders(BATCH_SIZE,train_dataset,
     
     return train_loader, validation_loader, test_loader
 
+def getbest(db:pd.DataFrame,groupcols: list,metric_cols:list, loss_columns:list=['val_loss','train_loss']):
+    db1=db.copy()
+    agregaciones={
+        f"{col}":(col ,'mean')
+        for col in metric_cols
+    }
+    tolenrance=1e-2
+    db2=db1[db1['epoch']==db1['best_epoch']].copy()
+    #db2=db1.copy()
+    db3=db2.groupby(by=groupcols)[metric_cols].agg(**agregaciones).reset_index()
+    db3['no_overfiting']=db3.apply(
+        lambda x : (abs(x[metric_cols[0]]-x[metric_cols[1]])<tolenrance ) or
+        (abs(x[metric_cols[2]]-x[metric_cols[3]])<tolenrance )
+    , axis=1)
+    db4=db3[db3['no_overfiting']]
+    result=dict(db4.sort_values(metric_cols[:2], ascending=False).iloc[0])
+    
+    
+    return result

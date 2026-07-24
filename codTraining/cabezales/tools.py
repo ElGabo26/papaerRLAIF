@@ -1177,3 +1177,8 @@ def preparar_dataset_vectores(
     return tensor_dataset
     
     
+def batch_n(lista, n):
+  k, m = divmod(len(lista), n)
+  return [
+      lista[i * k + min(i, m) : (i + 1) * k + min(i + 1, m)] for i in range(n)
+  ]
