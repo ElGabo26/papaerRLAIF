@@ -111,7 +111,7 @@ for seed in seeds:
     train, test, eval =makeDivision(datos,0.30,seed)
     trainL, testL , evalL=createLoaders(256,train,test,eval)
     for batch in batchConfig:
-        print(batch)
+        
         name=f"models_seed_{seed}_batch_{batchConfig.index(batch) +1}"
         with tqdm(total=len(batch)) as barra:
             
