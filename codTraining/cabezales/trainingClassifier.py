@@ -73,4 +73,4 @@ for db in bases:
     print("MODELO GUARDADO")
     resultado=concat([data,result])
 
-resultado.to(f"{OUTPUT_MODEL}/testmodel_metrics_claridad.csv")
+resultado.to_csv(f"{OUTPUT_MODEL}/testmodel_metrics_claridad.csv")
