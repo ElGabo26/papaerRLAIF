@@ -112,8 +112,6 @@ def train_eval_binary(
 
     for epoch in range(NUM_EPOCHS):
 
-        print(f"\nEPOCH: {epoch + 1}")
-
         # ====================================================
         # ENTRENAMIENTO
         # ====================================================
@@ -339,10 +337,7 @@ def train_eval_binary(
                 clasificador.state_dict()
             )
 
-            print(
-                f"Mejora detectada | "
-                f"Mejor Val F1: {best_val_f1:.4f}"
-            )
+           
 
         else:
 
@@ -354,11 +349,8 @@ def train_eval_binary(
         # Detener cuando se alcanza patience.
         if epochs_without_improvement >= patience:
 
-            print(
-                f"Mejor época: {best_epoch} | "
-                f"Mejor Val F1: {best_val_f1:.4f}"
-            )
             results.append(data)
+            
             break
         
        

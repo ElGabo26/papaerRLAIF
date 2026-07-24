@@ -56,32 +56,35 @@ for db in bases:
         input_dim = datos.tensors[0].shape[1]
         train, test, eval =makeDivision(datos,0.30,seed)
         trainL, testL , evalL=createLoaders(16,train,test,eval)
-        for hidden_dim in hidden_dim_options:
-            config = {
-                "input_dim": input_dim,
-                "hidden_dim": hidden_dim,
-                "num_hidden_layers": 1,
-                "activation": "gelu",
-                "normalization": "layernorm",
-                "dropout": 0.30,
-                "device": DEVICE,
-            }
+        with tqdm(total=27) as barra:
+            for hidden_dim in hidden_dim_options:
+                config = {
+                    "input_dim": input_dim,
+                    "hidden_dim": hidden_dim,
+                    "num_hidden_layers": 1,
+                    "activation": "gelu",
+                    "normalization": "layernorm",
+                    "dropout": 0.30,
+                    "device": DEVICE,
+                }
 
-            clasificador=crear_clasificador_binario(**config)
-            
+                clasificador=crear_clasificador_binario(**config)
+                
 
-            optimizador = torch.optim.AdamW(
-            clasificador.parameters(),
-            lr=LEARNING_RATE)
+                optimizador = torch.optim.AdamW(
+                clasificador.parameters(),
+                lr=LEARNING_RATE)
 
-            model, data=train_eval_binary(DEVICE,20, clasificador,criterio,optimizador, trainL,testL,umbral=0.5,patience=3)
+                model, data=train_eval_binary(DEVICE,20, clasificador,criterio,optimizador, trainL,testL,umbral=0.5,patience=3)
+                
+                config['seed']=seed
+                data['pooling']=pooling
+                for i,j in config.items():
+                    data[i]=j
+                
+                result.append(data)
+                barra.update(1)
             
-            config['seed']=seed
-            data['pooling']=pooling
-            for i,j in config.items():
-                data[i]=j
-            
-            result.append(data)
             
             print(f"ENTRANAMIENTO COMPLETADO")
         
@@ -138,7 +141,7 @@ batchConfig=batch_n(configs,8)
 #cargamos los  datos
 print("DEFINIMOS ARQUITECTURA RED")
 datos = torch.load(
-            f"{DATA_ROUTE}/claridad_{pooling}",
+            f"{DATA_ROUTE}/claridad_{pooling}.pt",
             map_location="cpu",
             weights_only=True)
 
@@ -164,13 +167,3 @@ finalBase=concat(finalBase)
 finalBase.to_csv(f"{OUTPUT_MODEL}/finalBase.csv")
 print("finalBaseCreada")
         
-    
-    
-    
-    
-    
-    
-    
-
-resultado=concat(result)
-resultado.to_csv(f"{OUTPUT_MODEL}/metadata_claridad_pooling.csv")
