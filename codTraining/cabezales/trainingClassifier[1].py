@@ -97,7 +97,7 @@ datos = torch.load(
             map_location="cpu",
             weights_only=True)
 
-datos.tensors[0].shape[1]
+input_dim=datos.tensors[0].shape[1]
 
 configs=[x.update({"input_dim": input_dim, "device": DEVICE})
          for x in configs]
