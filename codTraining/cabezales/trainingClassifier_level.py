@@ -5,7 +5,7 @@ from itertools import product
 from torch.utils.data import TensorDataset
 torch.serialization.add_safe_globals([TensorDataset])
 from os import listdir
-from pandas import DataFrame, concat
+from pandas import DataFrame, concat, read_csv
 from tools import (crear_clasificador_binario, 
                    crear_clasificador_multiclase, batch_n)
 
@@ -23,12 +23,12 @@ DATA_ROUTE="/workspace/papaerRLAIF/codTraining/cabezales/vectorBases"
 OUTPUT_MODEL="/workspace/papaerRLAIF/codTraining/cabezales/models"
 
 bases=listdir(DATA_ROUTE)
-#bases  de  claridad
-bases=[x for x in  bases if 'claridad' in x]
+#bases  de  level
+bases=[x for x in  bases if 'level' in x]
 
 
 
-seeds=[ 42,    123,    2024]
+seeds=[   123,    2024]
 num_hidden_layers_options = [0, 1, 2, 3]
 hidden_dim_options = [128, 256, 512]
 activation_options = [ "gelu",    "relu",    "silu"]
@@ -91,8 +91,9 @@ for db in bases:
         
 
 resultado=concat(result)
-resultado.to_csv(f"{OUTPUT_MODEL}/metadata_claridad_pooling.csv")
+resultado.to_csv(f"{OUTPUT_MODEL}/metadata_level_pooling.csv")
 print("resultado pooling guardado")
+
 groupcols=['pooling']
 metrics= ['train_f1','val_f1','train_accuracy','val_accuracy']
 pooling=getbest(resultado,groupcols,metrics)
@@ -115,8 +116,9 @@ configNames = [ "num_hidden_layers",
 configs=list(map(
     lambda x: dict(zip(configNames,x))
     ,a))
-configs=[x.update({"input_dim": input_dim, "device": DEVICE})
-         for x in configs]
+
+print(DEVICE)
+
 #funcion de  creacion  y  entrenamiento
 def defRed(config:dict, DEVICE:str, seed:int,pooling:str):
     
@@ -129,9 +131,10 @@ def defRed(config:dict, DEVICE:str, seed:int,pooling:str):
                                     optimizador, 
                                     trainL,testL,umbral=0.5,patience=3)
     
-    config['seed']=seed
+    config1=config.copy()
+    config1['seed']=seed
     data['pooling']=pooling
-    for i,j in config.items():
+    for i,j in config1.items():
         data[i]=j
     barra.update(1)
     
@@ -142,29 +145,37 @@ batchConfig=batch_n(configs,8)
 #cargamos los  datos
 print("DEFINIMOS ARQUITECTURA RED")
 datos = torch.load(
-            f"{DATA_ROUTE}/claridad_{pooling}.pt",
+            f"{DATA_ROUTE}/level_{pooling}.pt",
             map_location="cpu",
             weights_only=True)
+
+input_dim=datos.tensors[0].shape[1]
+
+configs=[x.update({"input_dim": input_dim, "device": DEVICE})
+         for x in configs]
+
+print("TOTAL CONFIGS ",len(configs))
 
 finalBase=[]
 for seed in seeds:
     print(seed)
     input_dim = datos.tensors[0].shape[1]
     train, test, eval =makeDivision(datos,0.30,seed)
-    trainL, testL , evalL=createLoaders(16,train,test,eval)
+    trainL, testL , evalL=createLoaders(512,train,test,eval)
     for batch in batchConfig:
-        name=f"models_seed_{seed}_batch_{batchConfig.index(batch) +1}"
+        
+        name=f"models_level_seed_{seed}_batch_{batchConfig.index(batch) +1}"
         with tqdm(total=len(batch)) as barra:
             
             resutlBatch=list(map(
                 lambda x: defRed(x,DEVICE,seed, pooling)
             , batch))
-            resultB=concat(resutlBatch)
-            resultB.to_csv(f"{OUTPUT_MODEL}/{name}.csv")
-            finalBase.append(resultB)
-            print(name, "GUARDADO")
+        resultB=concat(resutlBatch)
+        resultB.to_csv(f"{OUTPUT_MODEL}/{name}.csv")
+        finalBase.append(resultB)
+        print(name, "GUARDADO")
 
 finalBase=concat(finalBase)
-finalBase.to_csv(f"{OUTPUT_MODEL}/finalBase.csv")
+finalBase.to_csv(f"{OUTPUT_MODEL}/level_finalBase.csv")
 print("finalBaseCreada")
         

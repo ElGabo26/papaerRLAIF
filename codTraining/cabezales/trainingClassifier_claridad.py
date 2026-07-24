@@ -43,8 +43,57 @@ criterio = nn.BCEWithLogitsLoss()
 #===============================================================
 #DEFINIMOS POOLING
 #===============================================================
-resultado=read_csv(f"{OUTPUT_MODEL}/metadata_claridad_pooling.csv")
+result=[]
+for db in bases:
+    pooling=db.split('_')[1].split('.')[0]
+    print(pooling)
+    with tqdm(total=27) as barra:
+        for seed in seeds:
+            print(seed)
+            datos = torch.load(
+                f"{DATA_ROUTE}/{db}",
+                map_location="cpu",
+                weights_only=True)
+            input_dim = datos.tensors[0].shape[1]
+            train, test, eval =makeDivision(datos,0.30,seed)
+            trainL, testL , evalL=createLoaders(256,train,test,eval)
+            
+            for hidden_dim in hidden_dim_options:
+                config = {
+                    "input_dim": input_dim,
+                    "hidden_dim": hidden_dim,
+                    "num_hidden_layers": 1,
+                    "activation": "gelu",
+                    "normalization": "layernorm",
+                    "dropout": 0.30,
+                    "device": DEVICE,
+                }
+
+                clasificador=crear_clasificador_binario(**config)
+                
+
+                optimizador = torch.optim.AdamW(
+                clasificador.parameters(),
+                lr=LEARNING_RATE)
+
+                model, data=train_eval_binary(DEVICE,20, clasificador,criterio,optimizador, trainL,testL,umbral=0.5,patience=3)
+                
+                config['seed']=seed
+                data['pooling']=pooling
+                for i,j in config.items():
+                    data[i]=j
+                
+                result.append(data)
+                barra.update(1)
+                
+                
+                print(f"ENTRANAMIENTO COMPLETADO")
+        
+
+resultado=concat(result)
+resultado.to_csv(f"{OUTPUT_MODEL}/metadata_claridad_pooling.csv")
 print("resultado pooling guardado")
+
 groupcols=['pooling']
 metrics= ['train_f1','val_f1','train_accuracy','val_accuracy']
 pooling=getbest(resultado,groupcols,metrics)
