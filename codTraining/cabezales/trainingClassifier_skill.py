@@ -33,7 +33,7 @@ print(bases)
 
 
 
-seeds=[42,   123,    2024]
+seeds=[   2024]
 num_hidden_layers_options = [0, 1, 2, 3]
 hidden_dim_options = [128, 256, 512]
 activation_options = [ "gelu",    "relu",    "silu"]
