@@ -104,8 +104,9 @@ for i,j in params.items():
     train, test, eval =makeDivision(data,0.30,SEED)
     trainL, testL , evalL=createLoaders(256,train,test,eval)
     if i=='skill':
-        param['num_clases']=NUM_CLASSES
-        config={x:param[x] for x in config_multiclass_model}
+        param1=param.copy()
+        param1['num_classes']=NUM_CLASSES
+        config={x:param1[x] for x in config_multiclass_model}
         #entranmos el  modelo
         model=makeRed_multi(config,DEVICE,SEED,trainL,testL)
         print('MODELO ENTRENADO')
