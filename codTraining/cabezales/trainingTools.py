@@ -845,13 +845,13 @@ def  createLoaders(BATCH_SIZE,train_dataset,
     
     return train_loader, validation_loader, test_loader
 
-def getbest(db:pd.DataFrame,groupcols: list,metric_cols:list, loss_columns:list=['val_loss','train_loss']):
+def getbest(db:pd.DataFrame,groupcols: list,metric_cols:list, tolenrance=4e-2):
     db1=db.copy()
     agregaciones={
         f"{col}":(col ,'mean')
         for col in metric_cols
     }
-    tolenrance=4e-2
+    
     db2=db1[db1['epoch']==db1['best_epoch']].copy()
     #db2=db1.copy()
     db3=db2.groupby(by=groupcols)[metric_cols].agg(**agregaciones).reset_index()
@@ -861,6 +861,7 @@ def getbest(db:pd.DataFrame,groupcols: list,metric_cols:list, loss_columns:list=
     , axis=1)
     db4=db3[db3['no_overfiting']]
     result=dict(db4.sort_values(metric_cols[:2], ascending=False).iloc[0])
-    
+    if result[metric_cols[0]]<0.9 or result[metric_cols[1]]<0.9:
+        result=dict(db3.sort_values(metric_cols[:2], ascending=False).iloc[0])
     
     return result
