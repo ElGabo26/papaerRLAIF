@@ -93,6 +93,7 @@ def makeRed_multi(config:dict, DEVICE:str, seed:int,trainL,testL):
 for i,j in params.items():
     param=j.copy()
     param['device']=DEVICE
+    param['input_dim']=1024
     name_base=f"{i}_{param['pooling']}.pt"
     data = torch.load(
             f"{DATA_ROUTE}/{name_base}",
