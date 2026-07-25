@@ -70,7 +70,7 @@ def makeRed_binario(config:dict, DEVICE:str, seed:int,trainL,testL):
     clasificador.parameters(),
     lr=LEARNING_RATE)
 
-    model=train_eval_binary(DEVICE,20, clasificador,criterio,
+    model, data=train_eval_binary(DEVICE,20, clasificador,criterio,
                                     optimizador, 
                                     trainL,testL,umbral=0.5,patience=3)
     return model
