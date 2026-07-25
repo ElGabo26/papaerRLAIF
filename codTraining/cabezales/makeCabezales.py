@@ -90,7 +90,7 @@ def makeRed_multi(config:dict, DEVICE:str, seed:int,trainL,testL):
 
 
 
-for i,j in params:
+for i,j in params.items():
     param=j.copy()
     param['device']=DEVICE
     name_base=f"{i}_{param['pooling']}.pt"
