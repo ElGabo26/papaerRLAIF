@@ -21,7 +21,7 @@ DEVICE = torch.device(
 LEARNING_RATE= 3e-4
 DATA_ROUTE="/workspace/papaerRLAIF/codTraining/cabezales/vectorBases"
 OUTPUT_MODEL="/workspace/papaerRLAIF/codTraining/cabezales/models"
-NUM_CLASSES=14
+NUM_CLASSES=7
 NUM_EPOCHS=20
 MIN_DELTA=0.001
 
