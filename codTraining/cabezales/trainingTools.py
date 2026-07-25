@@ -863,5 +863,8 @@ def getbest(db:pd.DataFrame,groupcols: list,metric_cols:list, tolenrance=4e-2):
     result=dict(db4.sort_values(metric_cols[:2], ascending=False).iloc[0])
     if result[metric_cols[0]]<0.9 or result[metric_cols[1]]<0.9:
         result=dict(db3.sort_values(metric_cols[:2], ascending=False).iloc[0])
+        print(metric_cols[0],": ",result[metric_cols[0]])
+        print(metric_cols[1],": ",result[metric_cols[1]])
+        print(result[metric_cols[0]]-result[metric_cols[1]])
     
     return result
