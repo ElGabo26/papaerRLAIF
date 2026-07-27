@@ -102,7 +102,11 @@ for i,j in params1.items():
             weights_only=True)
     
     input_dim = data.tensors[0].shape[1]
-    print(data.tensors[1].shape)
+    l=data.tensors[1]
+    labels={}
+    for d in l:
+        labels[d] = labels.get(d, 0) + 1
+    print(labels)
     train, test, eval =makeDivision(data,0.30,SEED)
     trainL, testL , evalL=createLoaders(256,train,test,eval)
     if i=='skill':
