@@ -57,8 +57,8 @@ config_multiclass_model=[
     'device',
 ]
 
-class_names=['addition-subtraction' 'subtraction' 'division-multiplication' 'algebra'
- 'otro' 'geometry']
+class_names=['addition-subtraction', 'subtraction', 'division-multiplication' ,'algebra'
+ 'otro' ,'geometry']
 
 result_multi=[]
 result_binary=[]
@@ -141,6 +141,8 @@ resultMulti=pd.DataFrame(result_multi)
 
 resultBinary.to_csv(f"{OUTPUT_EVAL}/binari_models.csv")
 resultMulti.to_csv(f"{OUTPUT_EVAL}/multi_models.csv")
+
+print(result_multi)
 print('EVAL GUARDADO') 
 
 
