@@ -406,7 +406,7 @@ def eval_multiclass(
                 dtype=torch.long,
                 non_blocking=True,
             )
-
+            print(torch.unique(etiquetas))
             # Forma esperada:
             #
             # [batch_size, num_classes]
