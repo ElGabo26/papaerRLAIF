@@ -88,9 +88,10 @@ def makeRed_multi(config:dict, DEVICE:str, seed:int,trainL,testL):
     
     return model
 
+params1={}
+params1['skill']=params['skill']
 
-
-for i,j in params.items():
+for i,j in params1.items():
     param=j.copy()
     param['device']=DEVICE
     param['input_dim']=1024
