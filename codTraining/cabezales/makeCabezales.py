@@ -120,14 +120,20 @@ for i,j in params1.items():
         #evaluamos el modelo
         criterio = nn.CrossEntropyLoss()
         
-        etiquetas = torch.tensor([label for _, label in test])
-
+        etiquetas = torch.tensor([label for _, label in testL])
         valores_unicos = torch.unique(etiquetas)
-        print("Valores únicos:", valores_unicos)
+        print("Valores únicos test:", valores_unicos)
         
         resultadoTest=eval_multiclass(model,testL,DEVICE,criterio,class_names)
+        
+        etiquetas = torch.tensor([label for _, label in evalL])
+        valores_unicos = torch.unique(etiquetas)
+        print("Valores únicos eval:", valores_unicos)
+        
         resultadoVal=eval_multiclass(model,evalL,DEVICE,criterio,class_names)
         print('MODELO EVALUADO')
+        
+        
         resultadoTest['type']='test'
         resultadoTest['type']='val'
         result_multi.append(resultadoTest)
