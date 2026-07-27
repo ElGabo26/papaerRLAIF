@@ -40,9 +40,10 @@ activation_options = [ "gelu",    "relu",    "silu"]
 normalization_options = [    None,    "layernorm",    "batchnorm"]
 dropout_options = [    0.0,    0.1,    0.3,    0.5]
 
-'''
+
 # Función de pérdida para clasificación binaria.
 criterio = nn.CrossEntropyLoss()
+'''
 #===============================================================
 #DEFINIMOS POOLING
 #===============================================================
