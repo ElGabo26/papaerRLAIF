@@ -57,7 +57,7 @@ config_multiclass_model=[
     'device',
 ]
 
-class_names=['addition-subtraction', 'subtraction', 'division-multiplication' ,'algebra'
+class_names=['addition-subtraction', 'subtraction', 'division-multiplication' ,'algebra',
  'otro' ,'geometry']
 
 result_multi=[]
