@@ -21,7 +21,7 @@ DEVICE = torch.device(
 LEARNING_RATE= 3e-4
 DATA_ROUTE="/workspace/papaerRLAIF/codTraining/cabezales/vectorBases"
 OUTPUT_MODEL="/workspace/papaerRLAIF/codTraining/cabezales/models"
-NUM_CLASSES=7
+NUM_CLASSES=6
 NUM_EPOCHS=20
 MIN_DELTA=0.001
 
@@ -40,7 +40,7 @@ activation_options = [ "gelu",    "relu",    "silu"]
 normalization_options = [    None,    "layernorm",    "batchnorm"]
 dropout_options = [    0.0,    0.1,    0.3,    0.5]
 
-
+'''
 # Función de pérdida para clasificación binaria.
 criterio = nn.CrossEntropyLoss()
 #===============================================================
@@ -104,6 +104,9 @@ groupcols=['pooling']
 metrics= ['train_f1','val_f1','train_accuracy','val_accuracy']
 pooling=getbest(resultado,groupcols,metrics)
 pooling=pooling['pooling']
+'''
+pooling='mean'
+
 print("POOLING DEFINIDO: ", pooling)
 
 #===============================================================
