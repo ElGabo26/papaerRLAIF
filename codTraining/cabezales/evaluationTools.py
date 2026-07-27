@@ -501,7 +501,8 @@ def eval_multiclass(
         ]
 
     elif len(class_names) != num_classes:
-
+        print("NUMCLASES:", num_classes)
+        print("NUM NAMES:", len(class_names))
         raise ValueError(
             "La cantidad de nombres en class_names debe "
             "coincidir con num_classes."
