@@ -130,7 +130,7 @@ configs=list(map(
 print(DEVICE)
 
 #funcion de  creacion  y  entrenamiento
-def defRed(config:dict, DEVICE:str, seed:int,pooling:str):
+def defRed(config:dict, DEVICE:str, seed:int,pooling:str, criterio):
     
     clasificador=crear_clasificador_multiclase(**config)
     optimizador = torch.optim.AdamW(
@@ -178,7 +178,7 @@ for seed in seeds:
         with tqdm(total=len(batch)) as barra:
             
             resutlBatch=list(map(
-                lambda x: defRed(x,DEVICE,seed, pooling)
+                lambda x: defRed(x,DEVICE,seed, pooling, criterio)
             , batch))
         resultB=concat(resutlBatch)
         resultB.to_csv(f"{OUTPUT_MODEL}/{name}.csv")
