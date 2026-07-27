@@ -490,6 +490,7 @@ def eval_multiclass(
 
     # Número de clases definido por la salida del modelo.
     num_classes = y_prob.shape[1]
+    print("num_clases CALCULADO")
 
     # Comprobar o generar nombres de clases.
     if class_names is None:
