@@ -1,0 +1,8 @@
+# Cliente compatible con OpenAI y DeepSeek
+openai==2.46.0
+
+# Lectura y escritura de archivos CSV
+pandas>=2.3.0,<4.0.0
+
+# Barra de progreso
+tqdm==4.69.0

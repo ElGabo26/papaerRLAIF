@@ -13,20 +13,24 @@ from openai import (
     RateLimitError,
 )
 from tqdm.auto import tqdm
+from dotenv import load_dotenv
+
+# Carga las variables del archivo .env al entorno
+load_dotenv()
 
 
 # ============================================================
 # CONFIGURACIÓN
 # ============================================================
 
-INPUT_FILE = ""
-OUTPUT_FILE = ""
+INPUT_FILE = r"C:\Users\Gabo\Desktop\PAPPER Rlaif\makeResponses\promptBases\finalPromptBases\elementary_math_prompts_1200.csv"
+OUTPUT_FILE = Path(r"C:\Users\Gabo\Desktop\PAPPER Rlaif\makeResponses\responses\math_elementary_responses_gpt.csv")
 
-PROMPT_COLUMN = ""
-ID_COLUMN = ""
+PROMPT_COLUMN = "prompt"
+ID_COLUMN = "id_prompt"
 
 # Puede sustituirlo por otro modelo disponible en su proyecto.
-MODEL = "gpt-5.6"
+MODEL = "gpt-5.4-nano-2026-03-17"
 
 # Máximo de tokens generados por respuesta.
 MAX_OUTPUT_TOKENS = 200
@@ -42,6 +46,7 @@ SYSTEM_INSTRUCTIONS = (
     "Respond clearly, accurately, and only to the user's request."
 )
 
+TEMPERATURE=0.3
 
 # ============================================================
 # VALIDACIONES
@@ -96,7 +101,6 @@ def get_usage_value(
 # ============================================================
 # CONSULTA A OPENAI
 # ============================================================
-
 def request_openai(
     client: OpenAI,
     prompt: str,
@@ -105,18 +109,51 @@ def request_openai(
     Envía un prompt al modelo y devuelve la respuesta junto
     con sus metadatos.
 
+    Registra:
+    - Tiempo total de procesamiento.
+    - Tiempo esperando respuestas de la API.
+    - Tiempo de espera por reintentos.
+    - Temperatura utilizada.
+    - Número de intentos.
+
     Utiliza reintentos con espera exponencial ante errores
     temporales de conexión, límite de solicitudes o servidor.
     """
     last_error: Exception | None = None
 
+    # Tiempo desde el inicio del procesamiento del prompt.
+    total_start_time = time.perf_counter()
+
+    # Tiempo acumulado esperando las respuestas de la API.
+    api_time_seconds = 0.0
+
+    # Tiempo acumulado en pausas antes de reintentar.
+    retry_wait_seconds = 0.0
+
     for attempt in range(1, MAX_RETRIES + 1):
+
+        # Inicio del intento actual.
+        attempt_start_time = time.perf_counter()
+
         try:
             response = client.responses.create(
                 model=MODEL,
                 instructions=SYSTEM_INSTRUCTIONS,
                 input=prompt,
-                max_output_tokens=MAX_OUTPUT_TOKENS,
+                max_output_tokens=MAX_OUTPUT_TOKENS
+                
+            )
+
+            # Tiempo consumido por el intento exitoso.
+            attempt_elapsed = (
+                time.perf_counter() - attempt_start_time
+            )
+
+            api_time_seconds += attempt_elapsed
+
+            # Tiempo total, incluyendo solicitudes y pausas.
+            total_elapsed_seconds = (
+                time.perf_counter() - total_start_time
             )
 
             input_tokens = get_usage_value(
@@ -140,9 +177,31 @@ def request_openai(
                 "error": None,
                 "response_id": response.id,
                 "model": MODEL,
+
+                # Configuración de generación.
+                "temperature": TEMPERATURE,
+                "max_output_tokens": MAX_OUTPUT_TOKENS,
+
+                # Uso de tokens.
                 "input_tokens": input_tokens,
                 "output_tokens": output_tokens,
                 "total_tokens": total_tokens,
+
+                # Información temporal.
+                "elapsed_seconds": round(
+                    total_elapsed_seconds,
+                    4,
+                ),
+                "api_time_seconds": round(
+                    api_time_seconds,
+                    4,
+                ),
+                "retry_wait_seconds": round(
+                    retry_wait_seconds,
+                    4,
+                ),
+
+                # Número de intentos.
                 "attempts": attempt,
             }
 
@@ -152,6 +211,12 @@ def request_openai(
             APITimeoutError,
             InternalServerError,
         ) as error:
+            # Registra cuánto duró el intento fallido.
+            attempt_elapsed = (
+                time.perf_counter() - attempt_start_time
+            )
+
+            api_time_seconds += attempt_elapsed
             last_error = error
 
             if attempt == MAX_RETRIES:
@@ -159,7 +224,10 @@ def request_openai(
 
             # Backoff exponencial:
             # 2, 4, 8, 16, 32 segundos.
-            wait_time = INITIAL_WAIT_SECONDS * (2 ** (attempt - 1))
+            wait_time = (
+                INITIAL_WAIT_SECONDS
+                * (2 ** (attempt - 1))
+            )
 
             tqdm.write(
                 f"Error temporal: {type(error).__name__}. "
@@ -169,9 +237,20 @@ def request_openai(
 
             time.sleep(wait_time)
 
+            # Acumula el tiempo de pausa por reintentos.
+            retry_wait_seconds += wait_time
+
         except APIStatusError as error:
-            # Algunos errores HTTP no deben reintentarse,
-            # por ejemplo una API key inválida.
+            attempt_elapsed = (
+                time.perf_counter() - attempt_start_time
+            )
+
+            api_time_seconds += attempt_elapsed
+
+            total_elapsed_seconds = (
+                time.perf_counter() - total_start_time
+            )
+
             return {
                 "response": None,
                 "status": "error",
@@ -181,24 +260,83 @@ def request_openai(
                 ),
                 "response_id": None,
                 "model": MODEL,
+
+                # Configuración de generación.
+                "temperature": TEMPERATURE,
+                "max_output_tokens": MAX_OUTPUT_TOKENS,
+
+                # Uso de tokens.
                 "input_tokens": None,
                 "output_tokens": None,
                 "total_tokens": None,
+
+                # Información temporal.
+                "elapsed_seconds": round(
+                    total_elapsed_seconds,
+                    4,
+                ),
+                "api_time_seconds": round(
+                    api_time_seconds,
+                    4,
+                ),
+                "retry_wait_seconds": round(
+                    retry_wait_seconds,
+                    4,
+                ),
+
                 "attempts": attempt,
             }
 
         except Exception as error:
+            attempt_elapsed = (
+                time.perf_counter() - attempt_start_time
+            )
+
+            api_time_seconds += attempt_elapsed
+
+            total_elapsed_seconds = (
+                time.perf_counter() - total_start_time
+            )
+
             return {
                 "response": None,
                 "status": "error",
-                "error": f"{type(error).__name__}: {error}",
+                "error": (
+                    f"{type(error).__name__}: {error}"
+                ),
                 "response_id": None,
                 "model": MODEL,
+
+                # Configuración de generación.
+                "temperature": TEMPERATURE,
+                "max_output_tokens": MAX_OUTPUT_TOKENS,
+
+                # Uso de tokens.
                 "input_tokens": None,
                 "output_tokens": None,
                 "total_tokens": None,
+
+                # Información temporal.
+                "elapsed_seconds": round(
+                    total_elapsed_seconds,
+                    4,
+                ),
+                "api_time_seconds": round(
+                    api_time_seconds,
+                    4,
+                ),
+                "retry_wait_seconds": round(
+                    retry_wait_seconds,
+                    4,
+                ),
+
                 "attempts": attempt,
             }
+
+    # Se ejecuta cuando se agotaron todos los reintentos.
+    total_elapsed_seconds = (
+        time.perf_counter() - total_start_time
+    )
 
     return {
         "response": None,
@@ -210,13 +348,32 @@ def request_openai(
         ),
         "response_id": None,
         "model": MODEL,
+
+        # Configuración de generación.
+        "temperature": TEMPERATURE,
+        "max_output_tokens": MAX_OUTPUT_TOKENS,
+
+        # Uso de tokens.
         "input_tokens": None,
         "output_tokens": None,
         "total_tokens": None,
+
+        # Información temporal.
+        "elapsed_seconds": round(
+            total_elapsed_seconds,
+            4,
+        ),
+        "api_time_seconds": round(
+            api_time_seconds,
+            4,
+        ),
+        "retry_wait_seconds": round(
+            retry_wait_seconds,
+            4,
+        ),
+
         "attempts": MAX_RETRIES,
     }
-
-
 # ============================================================
 # CONTROL DE RESULTADOS Y REANUDACIÓN
 # ============================================================
