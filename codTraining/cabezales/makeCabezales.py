@@ -29,7 +29,7 @@ OUTPUT_MODEL="/workspace/adaptedModels/cabezales"
 OUTPUT_EVAL="/workspace/papaerRLAIF/codTraining/cabezales/"
 PARAMS_ROUTE="/workspace/papaerRLAIF/codTraining/cabezales/finalCabezalParams.joblib"
 SEED=42
-NUM_CLASSES=7
+NUM_CLASSES=6
 NUM_EPOCHS=20
 MIN_DELTA=0.001
 
@@ -57,8 +57,8 @@ config_multiclass_model=[
     'device',
 ]
 
-class_names=['addition-subtraction', 'subtraction', 'challenge',
-       'division-multiplication', 'algebra', 'otro', 'geometry']
+class_names=['addition-subtraction' 'subtraction' 'division-multiplication' 'algebra'
+ 'otro' 'geometry']
 
 result_multi=[]
 result_binary=[]
