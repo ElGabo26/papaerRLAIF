@@ -119,6 +119,8 @@ for i,j in params1.items():
         print('MODELO ENTRENADO')
         #evaluamos el modelo
         criterio = nn.CrossEntropyLoss()
+        valores_unicos = torch.unique(test.tensors[1])
+        print("Elementos únicos TEST:", valores_unicos)
         resultadoTest=eval_multiclass(model,testL,DEVICE,criterio,class_names)
         resultadoVal=eval_multiclass(model,evalL,DEVICE,criterio,class_names)
         print('MODELO EVALUADO')
