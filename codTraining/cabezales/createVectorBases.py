@@ -67,6 +67,8 @@ for base in dataroutes:
     name=base.split('.')[0]
     encoder=LabelEncoder()
     encoder.fit(db['labels'])
+    print(encoder.classes_)
+    print(len(list(encoder.classes_)))
     joblib.dump(encoder,f"{ENCODER_ROUTE}/{name}.joblib")
     print(f"encoder {base} guarrdado")
     
