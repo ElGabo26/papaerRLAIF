@@ -9,7 +9,7 @@ from evaluateResponsesTools import evaluateResponses
 
 ROUTE_BERT="/workspace/models/deberta-v3-large"
 ROUTE_CABEZALES="/workspace/adaptedModels/cabezales"
-ROUTE_ENCODER="/worksapce/papaerRLAIF/codTraining/cabezales/encoders"
+ROUTE_ENCODER="/workspace/papaerRLAIF/codTraining/cabezales/encoders"
 ROUTE_RESPONSES="/workspace/papaerRLAIF/makeResponses/responses" 
 OUTPUT_ROUTE="/worksapce/papaerRLAIF/makeResponses/evaluatedResponses"
 MAX_LENGTH = 128
