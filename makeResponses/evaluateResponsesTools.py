@@ -229,19 +229,18 @@ def create_embeddings(
 # ============================================================
 # 7. Clasificar prompts
 # ============================================================
-
 @torch.inference_mode()
 def classify_prompts(
-    prompts: Sequence[str],
+    prompts,
     tokenizer,
-    encoder: nn.Module,
-    classifier: nn.Module,
-    label_encoder: LabelEncoder,
-    device: torch.device,
-    batch_size: int = 8,
-    max_length: int = 256,
-) -> pd.DataFrame:
-
+    encoder,
+    classifier,
+    label_encoder,
+    device,
+    batch_size=8,
+    max_length=128,
+    threshold=0.5,
+):
     embeddings = create_embeddings(
         prompts=prompts,
         tokenizer=tokenizer,
@@ -259,76 +258,150 @@ def classify_prompts(
             start:start + batch_size
         ].to(device)
 
-        # El cabezal recibe:
-        # [batch_size, hidden_size]
-        #
-        # y retorna:
-        # [batch_size, num_classes]
         logits = classifier(batch_embeddings)
 
-        probabilities = torch.softmax(
-            logits,
-            dim=1,
-        )
+        # ----------------------------------------------------
+        # Clasificación binaria:
+        # salida [batch_size] o [batch_size, 1]
+        # ----------------------------------------------------
+        if logits.ndim == 1 or logits.shape[1] == 1:
 
-        predicted_indices = probabilities.argmax(
-            dim=1
-        )
+            logits = logits.squeeze(-1)
 
-        confidence_values = probabilities.max(
-            dim=1
-        ).values
+            positive_probabilities = torch.sigmoid(logits)
 
-        probabilities = (
-            probabilities
-            .cpu()
-            .numpy()
-        )
+            predicted_indices = (
+                positive_probabilities >= threshold
+            ).long()
 
-        predicted_indices = (
-            predicted_indices
-            .cpu()
-            .numpy()
-        )
+            positive_probabilities = (
+                positive_probabilities
+                .detach()
+                .cpu()
+                .numpy()
+            )
 
-        confidence_values = (
-            confidence_values
-            .cpu()
-            .numpy()
-        )
+            predicted_indices = (
+                predicted_indices
+                .detach()
+                .cpu()
+                .numpy()
+            )
 
-        for local_index, predicted_index in enumerate(
-            predicted_indices
-        ):
-            prompt_index = start + local_index
-
-            predicted_label = label_encoder.inverse_transform(
-                [predicted_index]
-            )[0]
-
-            row = {
-                "response": prompts[prompt_index],
-                "predicted_index": int(predicted_index),
-                "predicted_label": str(predicted_label),
-                "confidence": float(
-                    confidence_values[local_index]
-                ),
-            }
-
-            for class_position, class_name in enumerate(
-                label_encoder.classes_
+            for local_index, predicted_index in enumerate(
+                predicted_indices
             ):
-                row[f"prob_{class_name}"] = float(
-                    probabilities[
-                        local_index,
-                        class_position,
-                    ]
+                prompt_index = start + local_index
+
+                positive_probability = float(
+                    positive_probabilities[local_index]
                 )
 
-            predictions.append(row)
+                negative_probability = (
+                    1.0 - positive_probability
+                )
+
+                predicted_label = label_encoder.inverse_transform(
+                    [int(predicted_index)]
+                )[0]
+
+                confidence = max(
+                    negative_probability,
+                    positive_probability,
+                )
+
+                row = {
+                    "prompt": prompts[prompt_index],
+                    "predicted_index": int(predicted_index),
+                    "predicted_label": str(predicted_label),
+                    "confidence": float(confidence),
+                    "probability_class_0": negative_probability,
+                    "probability_class_1": positive_probability,
+                }
+
+                # Añadir los nombres reales de las clases.
+                if len(label_encoder.classes_) == 2:
+                    row[
+                        f"prob_{label_encoder.classes_[0]}"
+                    ] = negative_probability
+
+                    row[
+                        f"prob_{label_encoder.classes_[1]}"
+                    ] = positive_probability
+
+                predictions.append(row)
+
+        # ----------------------------------------------------
+        # Clasificación multiclase:
+        # salida [batch_size, num_classes]
+        # ----------------------------------------------------
+        else:
+
+            probabilities = torch.softmax(
+                logits,
+                dim=1,
+            )
+
+            predicted_indices = probabilities.argmax(
+                dim=1
+            )
+
+            confidence_values = probabilities.max(
+                dim=1
+            ).values
+
+            probabilities = (
+                probabilities
+                .detach()
+                .cpu()
+                .numpy()
+            )
+
+            predicted_indices = (
+                predicted_indices
+                .detach()
+                .cpu()
+                .numpy()
+            )
+
+            confidence_values = (
+                confidence_values
+                .detach()
+                .cpu()
+                .numpy()
+            )
+
+            for local_index, predicted_index in enumerate(
+                predicted_indices
+            ):
+                prompt_index = start + local_index
+
+                predicted_label = label_encoder.inverse_transform(
+                    [int(predicted_index)]
+                )[0]
+
+                row = {
+                    "prompt": prompts[prompt_index],
+                    "predicted_index": int(predicted_index),
+                    "predicted_label": str(predicted_label),
+                    "confidence": float(
+                        confidence_values[local_index]
+                    ),
+                }
+
+                for class_position, class_name in enumerate(
+                    label_encoder.classes_
+                ):
+                    row[f"prob_{class_name}"] = float(
+                        probabilities[
+                            local_index,
+                            class_position,
+                        ]
+                    )
+
+                predictions.append(row)
 
     return pd.DataFrame(predictions)
-
 
 # ============================================================
 # 8. Ejecución principal
