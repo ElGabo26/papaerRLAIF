@@ -7,11 +7,11 @@ from evaluateResponsesTools import evaluateResponses
 # 1. Configuración
 # ============================================================
 
-ROUTE_BERT="workspace/models/deberta-v3-large"
+ROUTE_BERT="/workspace/models/deberta-v3-large"
 ROUTE_CABEZALES="/workspace/adaptedModels/cabezales"
-ROUTE_ENCODER="worksapce/papaerRLAIF/codTraining/cabezales/encoders"
-ROUTE_RESPONSES="worksapce/papaerRLAIF/makeResponses/responses" 
-OUTPUT_ROUTE="worksapce/papaerRLAIF/makeResponses/evaluatedResponses"
+ROUTE_ENCODER="/worksapce/papaerRLAIF/codTraining/cabezales/encoders"
+ROUTE_RESPONSES="/worksapce/papaerRLAIF/makeResponses/responses" 
+OUTPUT_ROUTE="/worksapce/papaerRLAIF/makeResponses/evaluatedResponses"
 MAX_LENGTH = 128
 BATCH_SIZE = 8
 
