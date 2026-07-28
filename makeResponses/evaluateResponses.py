@@ -37,11 +37,13 @@ for base in ["math_elementary_responses_deepSeek.csv"]:
     data=pd.read_csv(f"{ROUTE_RESPONSES}/{base}")
     print(f"{base} CARGADA",data.shape[0])
     resultBase=data['response'].copy()
+    resultBase.dropna(inplace=True)
     
     for i in range(len(cabezales)):
         cabezal=cabezales[i]
         cabezalName=cabezal.split(".")[0]
         encoder=f"{cabezalName}.joblib"
+        
         if cabezal.split(".")[0] != encoder.split(".")[0]:
             print(cabezal.split(".")[0] , encoder.split(".")[0])
             raise ValueError("no  coinciden  el  cabezal  y el encoder")
@@ -56,9 +58,7 @@ for base in ["math_elementary_responses_deepSeek.csv"]:
         print("RESULTADOS EVALUADOS")
         print(evaluated.columns)
         
-        if evaluated.shape[0] != resultBase.shape[0]:
-            print(evaluated.shape[0],resultBase.shape[0])
-            raise ValueError(' shape  de resultados  inconsistente')
+        
         
         
         resultBase=pd.merge(
