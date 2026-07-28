@@ -1,12 +1,14 @@
 import pandas as pd
+import os
 from tqdm import tqdm
 from time import time
 from  tools import  makeResponse, testModel
 from metrics import medir_recursos
 
-REPETITIONS=4
-RUTAOUTPUT="/workspace/papaerRLAIF/codPreferences/bases"
-base=pd.read_csv("codPreferences/prompts.csv")
+REPETITIONS=1
+MODEL_ROUTE="/workspace/models"
+RUTAOUTPUT="/workspace/papaerRLAIF/makeResponses/responses"
+base=pd.read_csv("//workspace/papaerRLAIF/makeResponses/promptBases/finalPromptBases")
 prompts=base.sample(frac=1.0, random_state=42)
 prompts1=prompts['prompt'].values
 total=len(prompts1)
@@ -22,14 +24,16 @@ def getresults(token, model,x):
     barra.update(1)
     return x,r,t1-t0, despues['ram_mb'], despues['gpu_mb']
 
-#['/workspace/models/DeepSeek-R1-Distill-Qwen-1.5B', '/workspace/models/Qwen2.5-1.5B-Instruct']
+#models=['/workspace/models/DeepSeek-R1-Distill-Qwen-1.5B', '/workspace/models/Qwen2.5-1.5B-Instruct']
+models=os.listdir()
+models=[f"{MODEL_ROUTE}/{x}" if x != "deberta-v3-large" else None for x in models]
 
-for ruta in ['/workspace/models/Qwen2.5-1.5B-Instruct']:
+for ruta in models:
     print("MODELO: ", ruta)
     token, model= testModel(ruta)    
     for i in range(REPETITIONS): 
         print(f"repeticion_{i+1}")
-        columnas=['prompt',f'response_{i+1}',f'tiempo_{i+1}',f'ram_mb_{i+1}',f'gpu_mb_{i+1}']  
+        columnas=['prompt',f'response',f'tiempo_{i+1}',f'ram_mb_{i+1}',f'gpu_mb_{i+1}']  
         with tqdm(total=total) as barra:
             resultado = list(map(
                 lambda x: getresults(token, model,x),
