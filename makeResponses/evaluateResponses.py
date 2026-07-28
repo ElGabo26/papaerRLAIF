@@ -32,8 +32,10 @@ bases=os.listdir(ROUTE_RESPONSES)
 encoders=os.listdir(ROUTE_ENCODER)
 
 
-for base in ["math_elementary_responses_deepSeek.csv"]:
-    
+for base in bases:
+    if 'gpt' in  base or 'deepSeek' in base:
+        print(base)
+        continue
     data=pd.read_csv(f"{ROUTE_RESPONSES}/{base}")
     print(f"{base} CARGADA",data.shape[0])
     resultBase=data['response'].copy()
