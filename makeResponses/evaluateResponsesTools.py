@@ -311,7 +311,7 @@ def classify_prompts(
                 )
 
                 row = {
-                    "prompt": prompts[prompt_index],
+                    "response": prompts[prompt_index],
                     "predicted_index": int(predicted_index),
                     "predicted_label": str(predicted_label),
                     "confidence": float(confidence),
