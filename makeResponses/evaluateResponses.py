@@ -64,7 +64,7 @@ for base in ["math_elementary_responses_deepSeek.csv"]:
         resultBase=pd.merge(
             resultBase, evaluated,on='response', how='left'
         )
-        print("RESULTADOS CONCATENADOS",resultBase.shape)
+        print("RESULTADOS CONCATENADOS",evaluated.shape,resultBase.shape)
     
     resultBase.to_csv(f"{OUTPUT_ROUTE}/evaluated_{base}")
     print(f"{base} TOTALMENTE EVALUADA")
