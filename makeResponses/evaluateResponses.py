@@ -1,6 +1,7 @@
 import pandas  as pd
 import os
 import torch 
+from pathlib import Path
 from evaluateResponsesTools import evaluateResponses
 
 # ============================================================
@@ -30,6 +31,8 @@ cabezales=os.listdir(ROUTE_CABEZALES)
 bases=os.listdir(ROUTE_RESPONSES)
 encoders=os.listdir(ROUTE_ENCODER)
 
+ROUTE_CABEZALES=Path(ROUTE_CABEZALES)
+ROUTE_ENCODER=Path(ROUTE_ENCODER)
 for base in bases:
     data=pd.read_csv(f"{ROUTE_RESPONSES}/{base}")
     print(f"{base} CARGADA",data.shape[0])
