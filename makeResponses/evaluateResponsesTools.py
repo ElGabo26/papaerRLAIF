@@ -411,7 +411,9 @@ def evaluateResponses(BASE_RESPONSES:str, responseColumn:str,ENCODER_PATH:str,CL
 
     responseBase= pd.read_csv(f"{BASE_RESPONSES}")
     responses=responseBase[responseColumn].to_list()
+    print("TOTAL  RESPONSES ",len(responses))
     print("Cargando tokenizer y encoder...")
+    
 
     tokenizer, encoder = load_encoder(
         encoder_path=ENCODER_PATH,
