@@ -55,6 +55,7 @@ for base in bases:
         print(evaluated.columns)
         
         if evaluated.shape[0] != resultBase.shape[0]:
+            print(evaluated.shape[0],resultBase.shape[0])
             raise ValueError(' shape  de resultados  inconsistente')
         
         
