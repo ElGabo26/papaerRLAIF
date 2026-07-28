@@ -27,21 +27,24 @@ def getresults(token, model,x):
 #models=['/workspace/models/DeepSeek-R1-Distill-Qwen-1.5B', '/workspace/models/Qwen2.5-1.5B-Instruct']
 models=os.listdir(MODEL_ROUTE)
 models=[f"{MODEL_ROUTE}/{x}" if x != "deberta-v3-large" else None for x in models]
-print(models)
+
 
 for ruta in models:
-    print("MODELO: ", ruta)
-    token, model= testModel(ruta)    
-    for i in range(REPETITIONS): 
-        print(f"repeticion_{i+1}")
-        columnas=['prompt',f'response',f'tiempo_{i+1}',f'ram_mb_{i+1}',f'gpu_mb_{i+1}']  
-        with tqdm(total=total) as barra:
-            resultado = list(map(
-                lambda x: getresults(token, model,x),
-                prompts1))
-        r=pd.DataFrame(columns=columnas,data=resultado)
-        name='result'+ruta.split('/')[-1]
-        r.to_csv(f"{RUTAOUTPUT}/{name}_{i+1}.csv")
-        print(f"RESPUESTAS: {i+1} REALIZADAS")
+    if ruta:
+        print("MODELO: ", ruta)
+        token, model= testModel(ruta)    
+        for i in range(REPETITIONS): 
+            print(f"repeticion_{i+1}")
+            columnas=['prompt',f'response',f'tiempo_{i+1}',f'ram_mb_{i+1}',f'gpu_mb_{i+1}']  
+            with tqdm(total=total) as barra:
+                resultado = list(map(
+                    lambda x: getresults(token, model,x),
+                    prompts1))
+            r=pd.DataFrame(columns=columnas,data=resultado)
+            name='result'+ruta.split('/')[-1]
+            r.to_csv(f"{RUTAOUTPUT}/{name}_{i+1}.csv")
+            print(f"RESPUESTAS: {i+1} REALIZADAS")
+    else:
+        pass
 
 
