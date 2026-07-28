@@ -41,7 +41,8 @@ for base in bases:
         cabezalName=cabezal.split(".")[0]
         encoder=encoders[i]
         if cabezal.split(".")[0] != encoder.split(".")[0]:
-            raise ValueError("no  ciciden  el  cabezal  y elencoder")
+            print(cabezal.split(".")[0] , encoder.split(".")[0])
+            raise ValueError("no  coinciden  el  cabezal  y el encoder")
         
         evaluated=evaluateResponses(f"{ROUTE_RESPONSES}/{base}",'response',
                         ROUTE_BERT,

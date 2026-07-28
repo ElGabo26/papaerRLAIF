@@ -465,10 +465,6 @@ def evaluateResponses(BASE_RESPONSES:str, responseColumn:str,ENCODER_PATH:str,CL
     ]
 
     print("\nResultados:")
-    print(
-        results[columns_to_show].to_string(
-            index=False
-        )
-    )
+    
 
     return results
