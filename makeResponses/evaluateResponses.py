@@ -33,9 +33,11 @@ encoders=os.listdir(ROUTE_ENCODER)
 
 
 for base in bases:
+    
     data=pd.read_csv(f"{ROUTE_RESPONSES}/{base}")
     print(f"{base} CARGADA",data.shape[0])
     resultBase=data['response'].copy()
+    
     for i in range(len(cabezales)):
         cabezal=cabezales[i]
         cabezalName=cabezal.split(".")[0]
@@ -60,7 +62,7 @@ for base in bases:
         
         
         resultBase=pd.merge(
-            resultBase, evaluated,on='response', how='inner'
+            resultBase, evaluated,on='response', how='left'
         )
         print("RESULTADOS CONCATENADOS",resultBase.shape)
     
