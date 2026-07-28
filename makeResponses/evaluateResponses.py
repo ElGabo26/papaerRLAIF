@@ -31,8 +31,7 @@ cabezales=os.listdir(ROUTE_CABEZALES)
 bases=os.listdir(ROUTE_RESPONSES)
 encoders=os.listdir(ROUTE_ENCODER)
 
-ROUTE_CABEZALES=Path(ROUTE_CABEZALES)
-ROUTE_ENCODER=Path(ROUTE_ENCODER)
+
 for base in bases:
     data=pd.read_csv(f"{ROUTE_RESPONSES}/{base}")
     print(f"{base} CARGADA",data.shape[0])
@@ -45,8 +44,9 @@ for base in bases:
             raise ValueError("no  ciciden  el  cabezal  y elencoder")
         
         evaluated=evaluateResponses(f"{ROUTE_RESPONSES}/{base}",'response',
-                        ROUTE_BERT,f"{ROUTE_CABEZALES}/{cabezal}",
-                        f"{ROUTE_ENCODER}/{encoder}",BATCH_SIZE,MAX_LENGTH,
+                        ROUTE_BERT,
+                        Path(f"{ROUTE_CABEZALES}/{cabezal}"),
+                        Path(f"{ROUTE_ENCODER}/{encoder}"),BATCH_SIZE,MAX_LENGTH,
                         DEVICE)
         columns=[f"{x}_{cabezalName}" if x != 'response' else x for  x in evaluated.columns ]
         evaluated.columns=columns
