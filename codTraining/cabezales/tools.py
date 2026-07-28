@@ -218,7 +218,7 @@ def realizar_max_pooling(
 
 
 @torch.inference_mode()
-def obtener_salida_modelo(
+def obtener_salida_modelo_bert(
     texto: str | list[str],
     tokenizer: Any,
     modelo: nn.Module,
@@ -906,7 +906,7 @@ def preparar_dataset_vectores(
     modelo_bert: torch.nn.Module,
     device: torch.device,
     pooling: str = "mean",
-    max_length: int = 128,
+    max_length: int = 256,
     embedding_batch_size: int = 8,
     label_encoder: LabelEncoder | None = None,
 ) -> tuple[TensorDataset, LabelEncoder, torch.Tensor]:
