@@ -32,7 +32,7 @@ bases=os.listdir(ROUTE_RESPONSES)
 encoders=os.listdir(ROUTE_ENCODER)
 
 
-for base in ["math_elementary_responses_gpt.csv"]:
+for base in ["math_elementary_responses_deepSeek.csv"]:
     
     data=pd.read_csv(f"{ROUTE_RESPONSES}/{base}")
     print(f"{base} CARGADA",data.shape[0])
