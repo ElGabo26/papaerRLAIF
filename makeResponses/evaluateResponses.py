@@ -39,7 +39,7 @@ for base in bases:
     for i in range(len(cabezales)):
         cabezal=cabezales[i]
         cabezalName=cabezal.split(".")[0]
-        encoder=encoders[i]
+        encoder=f"{cabezalName}.joblib"
         if cabezal.split(".")[0] != encoder.split(".")[0]:
             print(cabezal.split(".")[0] , encoder.split(".")[0])
             raise ValueError("no  coinciden  el  cabezal  y el encoder")
