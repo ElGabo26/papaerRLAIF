@@ -25,7 +25,7 @@ def getresults(token, model,x):
     return x,r,t1-t0, despues['ram_mb'], despues['gpu_mb']
 
 #models=['/workspace/models/DeepSeek-R1-Distill-Qwen-1.5B', '/workspace/models/Qwen2.5-1.5B-Instruct']
-models=os.listdir()
+models=os.listdir(MODEL_ROUTE)
 models=[f"{MODEL_ROUTE}/{x}" if x != "deberta-v3-large" else None for x in models]
 print(models)
 
