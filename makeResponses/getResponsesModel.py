@@ -9,7 +9,7 @@ REPETITIONS=1
 MODEL_ROUTE="/workspace/models"
 RUTAOUTPUT="/workspace/papaerRLAIF/makeResponses/responses"
 base=pd.read_csv("/workspace/papaerRLAIF/makeResponses/promptBases/finalPromptBases/elementary_math_prompts_1200.csv")
-prompts=base.sample(frac=1.0, random_state=42)
+prompts=base
 prompts1=prompts['prompt'].values
 total=len(prompts1)
 
@@ -19,10 +19,10 @@ total=len(prompts1)
 def getresults(token, model,x):
     t0=time()
     r=makeResponse(token,model,x,0.25)
-    despues=medir_recursos()
+    #despues=medir_recursos()
     t1=time()
     barra.update(1)
-    return x,r,t1-t0, despues['ram_mb'], despues['gpu_mb']
+    return x,r,t1-t0
 
 #models=['/workspace/models/DeepSeek-R1-Distill-Qwen-1.5B', '/workspace/models/Qwen2.5-1.5B-Instruct']
 models=os.listdir(MODEL_ROUTE)
@@ -35,7 +35,7 @@ for ruta in models:
         token, model= testModel(ruta)    
         for i in range(REPETITIONS): 
             print(f"repeticion_{i+1}")
-            columnas=['prompt',f'response',f'tiempo_{i+1}',f'ram_mb_{i+1}',f'gpu_mb_{i+1}']  
+            columnas=['prompt',f'response',f'tiempo_{i+1}']  
             with tqdm(total=total) as barra:
                 resultado = list(map(
                     lambda x: getresults(token, model,x),

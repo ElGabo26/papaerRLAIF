@@ -23,7 +23,7 @@ def testModel(rutaModelo):
     model = AutoModelForCausalLM.from_pretrained(
         rutaModelo,
         torch_dtype="auto",
-        device_map="auto",
+        device_map="cuda",
         local_files_only=True
     )
 
