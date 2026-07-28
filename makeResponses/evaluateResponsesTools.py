@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Sequence
-
 import numpy as np
 import pandas as pd
+import joblib
 import torch
 import torch.nn as nn
 from sklearn.preprocessing import LabelEncoder
@@ -84,13 +84,7 @@ def load_label_encoder(
             f"No se encontró el archivo: {labels_path}"
         )
 
-    classes = np.load(
-        labels_path,
-        allow_pickle=True,
-    )
-
-    label_encoder = LabelEncoder()
-    label_encoder.classes_ = classes
+    label_encoder=joblib.load(labels_path)
 
     return label_encoder
 
