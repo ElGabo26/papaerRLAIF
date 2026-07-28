@@ -9,7 +9,7 @@ REPETITIONS=1
 MODEL_ROUTE="/workspace/models"
 RUTAOUTPUT="/workspace/papaerRLAIF/makeResponses/responses"
 base=pd.read_csv("/workspace/papaerRLAIF/makeResponses/promptBases/finalPromptBases/elementary_math_prompts_1200.csv")
-prompts=base
+prompts=base.sample(200, random_state=42)
 prompts1=prompts['prompt'].values
 total=len(prompts1)
 
