@@ -52,7 +52,7 @@ CONFIG: dict[str, Any] = {
         "test_size": 0.15,
 
         # Procesos de CPU utilizados para preparar los pares de preferencias.
-        "num_proc": 3,
+        "num_proc": 4,
 
         # Elimina pares repetidos para evitar que reciban mayor ponderación.
         "remove_duplicates": True,
@@ -60,7 +60,7 @@ CONFIG: dict[str, Any] = {
     "training": {
         # PRIORITARIO. Recorridos completos sobre todos los datos de entrenamiento.
         # Se mantienen las tres épocas del código original.
-        "num_train_epochs": 4.0,
+        "num_train_epochs": 3.0,
 
         # PRIORITARIO. Magnitud de la actualización de los adaptadores LoRA.
         "learning_rate": 5e-5,
@@ -103,7 +103,7 @@ CONFIG: dict[str, Any] = {
     },
     "lora": {
         # PRIORITARIO. Rango/capacidad de las matrices LoRA.
-        "r": 16,
+        "r": 8,
 
         # Factor de escalamiento de la actualización LoRA.
         "alpha": 32,
