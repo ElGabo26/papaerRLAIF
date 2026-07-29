@@ -60,10 +60,10 @@ CONFIG: dict[str, Any] = {
     "training": {
         # PRIORITARIO. Recorridos completos sobre todos los datos de entrenamiento.
         # Se mantienen las tres épocas del código original.
-        "num_train_epochs": 2.0,
+        "num_train_epochs": 3.0,
 
         # PRIORITARIO. Magnitud de la actualización de los adaptadores LoRA.
-        "learning_rate": 1e-3,
+        "learning_rate": 15e-4,
 
         # Prompts preferidos/rechazados procesados simultáneamente por GPU.
         # El valor 2 mejora el uso de una GPU de 24 GB. Si aparece CUDA OOM,
@@ -83,7 +83,7 @@ CONFIG: dict[str, Any] = {
         "max_length": 512,
 
         # Regularización L2 aplicada por AdamW.
-        "weight_decay": 0.1,
+        "weight_decay": 0.075,
 
         # Fracción inicial para aumentar progresivamente el learning rate.
         "warmup_ratio": 0.03,
@@ -109,7 +109,7 @@ CONFIG: dict[str, Any] = {
         "alpha": 32,
 
         # Regularización aplicada a los adaptadores LoRA.
-        "dropout": 0.10,
+        "dropout": 0.075,
 
         # No entrena los términos bias del modelo base.
         "bias": "none",
