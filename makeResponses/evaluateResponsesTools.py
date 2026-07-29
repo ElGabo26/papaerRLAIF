@@ -268,7 +268,8 @@ def classify_prompts(
 
         batch_embeddings = embeddings[
             start:start + batch_size
-        ].to(device)
+        ].to(device = device,
+             dtype=next(classifier.parameters()).dtype)
 
         logits = classifier(batch_embeddings)
 
