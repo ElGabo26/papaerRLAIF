@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from json import encoder
 from pathlib import Path
 from typing import Sequence
 import numpy as np
 import pandas as pd
 import joblib
+from zmq import device
 import torch
 import torch.nn as nn
 from sklearn.preprocessing import LabelEncoder
@@ -241,6 +243,19 @@ def classify_prompts(
     max_length=128,
     threshold=0.5,
 ):
+    tokenizer = tokenizer.to(
+    device=device,
+    dtype=torch.float32
+)
+
+    classifier = classifier.to(
+    device=device,
+    dtype=torch.float32
+)
+
+    tokenizer.eval()
+    classifier.eval()
+    
     embeddings = create_embeddings(
         prompts=prompts,
         tokenizer=tokenizer,
