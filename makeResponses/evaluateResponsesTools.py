@@ -243,10 +243,7 @@ def classify_prompts(
     max_length=128,
     threshold=0.5,
 ):
-    tokenizer = tokenizer.to(
-    device=device,
-    dtype=torch.float32
-)
+ 
 
     classifier = classifier.to(
     device=device,
