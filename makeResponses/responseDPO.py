@@ -5,7 +5,7 @@ from loadAlginModelTools import cargar_modelo, generar_respuestas_batch
 
 PROMPTS_CSV = "/workspace/papaerRLAIF/makeResponses/promptBases/finalPromptBases/elementary_math_prompts_1200.csv"
 prompts_df = pd.read_csv(PROMPTS_CSV)
-prompts_df=prompts_df.sample(100, random_state=42)
+prompts_df=prompts_df.sample(200, random_state=42)
 DPO_MODELS_PATH="/workspace/adaptedModels/DPO"
 PPO_MODELS_PATH="/workspace/adaptedModels/PPO"
 RESPONSES_PATH="/workspace/papaerRLAIF/makeResponses/responses"
