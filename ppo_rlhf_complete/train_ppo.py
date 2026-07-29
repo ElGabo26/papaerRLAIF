@@ -36,174 +36,158 @@ MODEL_PATH="/workspace/models/Qwen2.5-1.5B-Instruct"
 OUTPUT_MODEL_PATH="/workspace/adaptedModels/PPO/finalPPOModels/Qwen2.5-1.5B-Instruct-PPO"
 REWARD_MODEL_PATH="/workspace/adaptedModels/PPO/mergedRewardModels/Qwen2.5-1.5B-Instruct"
 
+from typing import Any
+
 CONFIG: dict[str, Any] = {
     "paths": {
-        # Modelo Instruct o SFT que se utilizará como política inicial de PPO.
         "sft_model": MODEL_PATH,
-
-        # Reward Model fusionado. Debe producir una única puntuación escalar.
         "reward_model": REWARD_MODEL_PATH,
-
-        # CSV de entrada. PPO utiliza la columna "prompt".
         "prompts": PREFERENCES_CSV,
-
-        # Directorio del modelo PPO, checkpoints, métricas y configuración.
         "output_dir": OUTPUT_MODEL_PATH,
     },
+
     "data": {
-        # Fracción de prompts reservada para evaluación.
-        "test_size": 0.20,
+        # Mantiene una evaluación pequeña. Usa 0.0 solo si tu código admite
+        # entrenar sin conjunto de evaluación.
+        "test_size": 0.05,
 
-        # Procesos de CPU utilizados para tokenizar los prompts.
-        "num_proc": 4,
+        # Aumentar si la máquina dispone de suficientes núcleos de CPU.
+        "num_proc": 8,
 
-        # Elimina prompts duplicados para evitar ponderarlos varias veces.
+        # Reduce episodios redundantes.
         "remove_duplicates": True,
     },
+
     "training": {
-        # Total exacto de episodios. Si es None, se calcula como:
-        # prompts_train × epochs_over_dataset.
+        # Se calcula como prompts_train × epochs_over_dataset.
         "total_episodes": None,
 
-        # PRIORITARIO. Recorridos completos sobre los prompts de entrenamiento.
-        # No debe confundirse con las épocas internas de PPO.
-        "epochs_over_dataset": 3,
+        # Un único recorrido por el dataset.
+        "epochs_over_dataset": 1,
 
-        # Semilla para que la división de datos y el entrenamiento sean
-        # reproducibles.
         "seed": 42,
     },
+
     "batch": {
-        # Prompts procesados simultáneamente por GPU.
-        # Si aparece CUDA OOM, reducir de 2 a 1.
-        "per_device_train_batch_size": 2,
+        # Incrementa el trabajo simultáneo de la GPU.
+        # Con 67 % de VRAM inicial, 4 es un punto de partida razonable.
+        "per_device_train_batch_size": 4,
 
-        # Pasos acumulados antes de actualizar los parámetros.
-        "gradient_accumulation_steps": 4,
+        # Evita varios forward/backward antes de actualizar.
+        "gradient_accumulation_steps": 1,
 
-        # Respuestas procesadas simultáneamente durante los rollouts.
-        # Incrementarlo mejora la utilización de GPU si existe VRAM disponible.
-        "local_rollout_forward_batch_size": 4,
+        # Parámetro especialmente importante para acelerar la generación PPO.
+        # Reducir a 8 si aparece CUDA OOM.
+        "local_rollout_forward_batch_size": 16,
 
-        # Divisiones internas del batch de PPO.
+        # Una sola división interna del batch.
         "num_mini_batches": 1,
 
-        # Trabajadores de CPU empleados por el DataLoader.
-        "dataloader_num_workers": 6,
+        # Ajustar según los núcleos reales de la máquina.
+        "dataloader_num_workers": 8,
 
-        # Acelera la transferencia CPU → GPU.
         "dataloader_pin_memory": True,
-
-        # Conserva los trabajadores entre iteraciones.
         "dataloader_persistent_workers": True,
     },
+
     "ppo": {
-        # PRIORITARIO. Magnitud de las actualizaciones de la política.
-        "learning_rate": 3e-6,
+        # Se incrementa ligeramente porque solo se ejecutará una época PPO.
+        "learning_rate": 5e-6,
 
-        # PRIORITARIO. Actualizaciones PPO realizadas sobre cada rollout.
-        # Un valor alto reutiliza más cada rollout, pero puede desestabilizar PPO.
-        "num_ppo_epochs": 4,
+        # Una única actualización PPO por rollout.
+        "num_ppo_epochs": 1,
 
-        # PRIORITARIO. Penalización por alejarse de la política SFT.
+        # Estos parámetros no reducen directamente el tiempo por paso,
+        # pero se conservan en valores estables.
         "kl_coef": 0.05,
-
-        # PRIORITARIO. Limita cambios grandes en la política.
         "cliprange": 0.20,
-
-        # Limita cambios grandes en el Value Model.
         "cliprange_value": 0.20,
-
-        # Peso de la pérdida del Value Model.
         "vf_coef": 0.10,
-
-        # Factor de descuento de las recompensas.
         "gamma": 1.0,
-
-        # Parámetro de GAE para el balance entre sesgo y varianza.
         "lam": 0.95,
-
-        # Norma máxima de los gradientes para evitar explosiones.
         "max_grad_norm": 1.0,
 
-        # Fracción inicial usada para incrementar gradualmente el learning rate.
-        "warmup_ratio": 0.03,
+        # Elimina pasos de calentamiento.
+        "warmup_ratio": 0.0,
 
-        # Evolución del learning rate durante el entrenamiento.
-        "lr_scheduler_type": "cosine",
+        # Evita el cálculo del scheduler coseno.
+        "lr_scheduler_type": "constant",
     },
-    "generation": {
-        # PRIORITARIO. Máximo de tokens generados en cada respuesta.
-        "response_length": 128,
 
-        # PRIORITARIO. Diversidad de las respuestas usadas como rollouts.
+    "generation": {
+        # Principal reducción del costo de generación.
+        "response_length": 64,
+
+        # Mantiene diversidad suficiente para PPO.
         "temperature": 0.70,
 
-        # Detiene la generación cuando aparece el token EOS.
+        # Permite terminar antes de los 64 tokens.
         "stop_token": "eos",
 
-        # Penalización si una respuesta no termina con EOS.
         "missing_eos_penalty": 1.0,
     },
+
     "lora": {
-        # PRIORITARIO. Rango y capacidad de los adaptadores LoRA.
-        "r": 16,
+        # Reduce parámetros entrenables y costo del backward.
+        "r": 8,
 
-        # Factor de escalamiento de las actualizaciones LoRA.
-        "alpha": 32,
+        # Mantiene alpha/r = 2.
+        "alpha": 16,
 
-        # Regularización aplicada a los adaptadores.
-        "dropout": 0.05,
+        # Dropout cero es ligeramente más rápido.
+        "dropout": 0.0,
 
-        # No se entrenan los términos bias del modelo base.
         "bias": "none",
 
-        # Aplica LoRA a las capas lineales del Transformer.
-        "target_modules": "all-linear",
+        # Mucho más eficiente que entrenar todas las capas lineales.
+        # Compatible con arquitecturas que usan q_proj y v_proj.
+        "target_modules": [
+            "q_proj",
+            "v_proj",
+        ],
     },
+
     "performance": {
-        # Implementación optimizada de atención incluida en PyTorch.
+        # Buen equilibrio entre compatibilidad y rendimiento.
         "attention_implementation": "sdpa",
 
-        # Acelera operaciones matriciales en GPUs NVIDIA modernas.
         "allow_tf32": True,
 
-        # False es más rápido. Cambiar a True únicamente si falta VRAM.
+        # Más rápido mientras exista suficiente VRAM.
         "gradient_checkpointing": False,
 
-        # Implementación fusionada de AdamW.
         "optim": "adamw_torch_fused",
 
-        # PPO usa generación dinámica; se desactiva para evitar recompilaciones.
+        # La generación dinámica suele provocar recompilaciones.
         "torch_compile": False,
 
-        # Reduce el consumo máximo de RAM durante la carga de modelos.
         "low_cpu_mem_usage": True,
     },
+
     "logging": {
-        # Se registra cada actualización para poder agregar métricas por época.
-        # Cambiarlo a 5 o 10 reduce ligeramente la sobrecarga, pero ofrece una
-        # estimación menos detallada.
-        "logging_steps": 1,
+        # Reduce escrituras y sincronizaciones CPU/GPU.
+        "logging_steps": 20,
 
-        # Evalúa y guarda al finalizar cada recorrido del dataset.
-        "eval_strategy": "epoch",
-        "save_strategy": "epoch",
+        # Desactiva evaluación durante el entrenamiento.
+        # El código debe admitir "no".
+        "eval_strategy": "no",
 
-        # Máximo de checkpoints retenidos.
-        "save_total_limit": 2,
+        # Evita crear checkpoints intermedios.
+        "save_strategy": "no",
 
-        # TensorBoard conserva las métricas interactivas.
-        "report_to": "tensorboard",
+        # No se utiliza mientras save_strategy sea "no".
+        "save_total_limit": 1,
 
-        # Nombre del CSV resumido: una fila por época del dataset.
-        "epoch_metrics_filename": f"ppo_metrics_by_epoch_{MODEL_PATH.split('/')[-1]}.csv",
+        # Elimina la sobrecarga de TensorBoard.
+        "report_to": "none",
 
-        # Copia serializada del diccionario de configuración ejecutado.
+        "epoch_metrics_filename": (
+            f"ppo_metrics_by_epoch_{MODEL_PATH.split('/')[-1]}.csv"
+        ),
+
         "config_filename": "ppo_experiment_config.json",
     },
 }
-
 
 PRIORITY_CONFIG_COLUMNS = {
     "config_sft_model": ("paths", "sft_model"),
