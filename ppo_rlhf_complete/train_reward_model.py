@@ -83,7 +83,7 @@ CONFIG: dict[str, Any] = {
         "max_length": 500,
 
         # Regularización L2 aplicada por AdamW.
-        "weight_decay": 0.010,
+        "weight_decay": 0.050,
 
         # Fracción inicial para aumentar progresivamente el learning rate.
         "warmup_ratio": 0.03,
