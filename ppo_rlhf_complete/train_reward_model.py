@@ -60,10 +60,10 @@ CONFIG: dict[str, Any] = {
     "training": {
         # PRIORITARIO. Recorridos completos sobre todos los datos de entrenamiento.
         # Se mantienen las tres épocas del código original.
-        "num_train_epochs": 3.0,
+        "num_train_epochs": 2.0,
 
         # PRIORITARIO. Magnitud de la actualización de los adaptadores LoRA.
-        "learning_rate": 5e-5,
+        "learning_rate": 1e-4,
 
         # Prompts preferidos/rechazados procesados simultáneamente por GPU.
         # El valor 2 mejora el uso de una GPU de 24 GB. Si aparece CUDA OOM,
