@@ -1,4 +1,5 @@
 import pandas as pd
+import tdqm
 import os
 from loadAlginModelTools import cargar_modelo, generar_respuesta
 
@@ -13,9 +14,15 @@ prompts=prompts_df["prompt"].tolist()
 #respuestas  DPO 
 dpoRoutes=os.listdir(DPO_MODELS_PATH)
 for dpoRoute in dpoRoutes:
+    responses=[]
     model_path = os.path.join(DPO_MODELS_PATH, dpoRoute)
     model, tokenizer = cargar_modelo(model_path)
-    responses = list(map(lambda prompt: generar_respuesta(model, tokenizer, prompt), prompts))
+    with tdqm.tqdm(total=len(prompts), desc=f"Generando respuestas para {dpoRoute}") as pbar:
+        for prompt in prompts:
+            response = generar_respuesta(model, tokenizer, prompt)
+            responses.append(response)
+            pbar.update(1)
+            
     result_df = pd.DataFrame({"prompt": prompts, "response": responses})
     result_df['algin']="DPO"
     result_df['model']=dpoRoute
@@ -27,7 +34,12 @@ ppoRoutes=os.listdir(PPO_MODELS_PATH)
 for ppoRoute in ppoRoutes:
     model_path = os.path.join(PPO_MODELS_PATH, ppoRoute)
     model, tokenizer = cargar_modelo(model_path)
-    responses = list(map(lambda prompt: generar_respuesta(model, tokenizer, prompt), prompts))
+    responses=[]
+    with tdqm.tqdm(total=len(prompts), desc=f"Generando respuestas para {ppoRoute}") as pbar:
+        for prompt in prompts:
+            response = generar_respuesta(model, tokenizer, prompt)
+            responses.append(response)
+            pbar.update(1)
     result_df = pd.DataFrame({"prompt": prompts, "response": responses})
     result_df['algin']="PPO"
     result_df['model']=ppoRoute
