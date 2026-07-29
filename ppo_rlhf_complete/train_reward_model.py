@@ -20,7 +20,7 @@ from trl import RewardConfig, RewardTrainer
 
 REQUIRED_COLUMNS = {"prompt", "chosen", "rejected"}
 
-PREFERENCES_CSV="workspace/papaerRLAIF/codTraining/calify/preferencesQwen.csv"
+PREFERENCES_CSV="/workspace/papaerRLAIF/codTraining/calify/preferencesQwen.csv"
 MODEL_PATH="/workspace/models/Qwen2.5-1.5B-Instruct"
 OUTPUT_MODEL_PATH="/workspace/adaptedModels/PPO/rewardModels"
 OUTPUT_MERGED_MODEL_PATH="/workspace/adaptedModels/PPO/mergedRewardModels"
