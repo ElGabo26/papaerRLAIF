@@ -109,7 +109,7 @@ CONFIG: dict[str, Any] = {
         "alpha": 32,
 
         # Regularización aplicada a los adaptadores LoRA.
-        "dropout": 0.05,
+        "dropout": 0.075,
 
         # No entrena los términos bias del modelo base.
         "bias": "none",
