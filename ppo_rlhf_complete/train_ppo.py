@@ -33,8 +33,8 @@ from trl.experimental.ppo import PPOConfig, PPOTrainer
 
 PREFERENCES_CSV="workspace/papaerRLAIF/codTraining/calify/preferencesQwen.csv"
 MODEL_PATH="/workspace/models/Qwen2.5-1.5B-Instruct"
-OUTPUT_MODEL_PATH="/workspace/adaptedModels/PPO/finalPPOModels"
-REWARD_MODEL_PATH="/workspace/adaptedModels/PPO/mergedRewardModels"
+OUTPUT_MODEL_PATH="/workspace/adaptedModels/PPO/finalPPOModels/Qwen2.5-1.5B-Instruct-PPO"
+REWARD_MODEL_PATH="/workspace/adaptedModels/PPO/mergedRewardModels/Qwen2.5-1.5B-Instruct"
 
 CONFIG: dict[str, Any] = {
     "paths": {
