@@ -83,7 +83,7 @@ CONFIG: dict[str, Any] = {
         "max_length": 500,
 
         # Regularización L2 aplicada por AdamW.
-        "weight_decay": 0.050,
+        "weight_decay": 0.01,
 
         # Fracción inicial para aumentar progresivamente el learning rate.
         "warmup_ratio": 0.03,
@@ -109,7 +109,7 @@ CONFIG: dict[str, Any] = {
         "alpha": 32,
 
         # Regularización aplicada a los adaptadores LoRA.
-        "dropout": 0.075,
+        "dropout": 0.05,
 
         # No entrena los términos bias del modelo base.
         "bias": "none",
