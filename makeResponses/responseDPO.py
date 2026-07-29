@@ -1,5 +1,5 @@
 import pandas as pd
-import tdqm
+import tqdm
 import os
 from loadAlginModelTools import cargar_modelo, generar_respuesta
 
