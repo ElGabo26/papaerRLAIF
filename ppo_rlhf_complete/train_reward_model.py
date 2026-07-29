@@ -63,16 +63,16 @@ CONFIG: dict[str, Any] = {
         "num_train_epochs": 3.0,
 
         # PRIORITARIO. Magnitud de la actualización de los adaptadores LoRA.
-        "learning_rate": 75e-5,
+        "learning_rate": 1e-4,
 
         # Prompts preferidos/rechazados procesados simultáneamente por GPU.
         # El valor 2 mejora el uso de una GPU de 24 GB. Si aparece CUDA OOM,
         # debe reducirse a 1 y duplicar gradient_accumulation_steps.
-        "per_device_train_batch_size": 4,
+        "per_device_train_batch_size": 6,
 
         # Batch utilizado durante la evaluación. Como no calcula gradientes,
         # normalmente puede ser mayor que el batch de entrenamiento.
-        "per_device_eval_batch_size": 2,
+        "per_device_eval_batch_size": 6,
 
         # Acumula gradientes antes de actualizar los pesos.
         # Con una GPU, batch efectivo = 2 × 4 = 8 preferencias.
@@ -80,7 +80,7 @@ CONFIG: dict[str, Any] = {
 
         # PRIORITARIO. Longitud máxima de prompt + respuesta.
         # No reduce el dataset; solo recorta secuencias que superan este límite.
-        "max_length": 460,
+        "max_length": 512,
 
         # Regularización L2 aplicada por AdamW.
         "weight_decay": 0.05,
@@ -143,7 +143,7 @@ CONFIG: dict[str, Any] = {
         "low_cpu_mem_usage": True,
 
         # Trabajadores usados por los DataLoader.
-        "dataloader_num_workers": 6,
+        "dataloader_num_workers": 8,
 
         # Acelera transferencias CPU → GPU.
         "dataloader_pin_memory": True,
