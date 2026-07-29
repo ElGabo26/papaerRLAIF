@@ -619,7 +619,6 @@ def main(config: dict[str, Any]) -> None:
         dataloader_persistent_workers=config[
             "performance"
         ]["dataloader_persistent_workers"],
-        group_by_length=config["performance"]["group_by_length"],
         eval_strategy=config["logging"]["eval_strategy"],
         logging_strategy=config["logging"]["logging_strategy"],
         save_strategy=config["logging"]["save_strategy"],
