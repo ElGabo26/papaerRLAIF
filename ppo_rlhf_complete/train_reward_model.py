@@ -52,7 +52,7 @@ CONFIG: dict[str, Any] = {
         "test_size": 0.15,
 
         # Procesos de CPU utilizados para preparar los pares de preferencias.
-        "num_proc": 4,
+        "num_proc": 3,
 
         # Elimina pares repetidos para evitar que reciban mayor ponderación.
         "remove_duplicates": True,
@@ -63,7 +63,7 @@ CONFIG: dict[str, Any] = {
         "num_train_epochs": 4.0,
 
         # PRIORITARIO. Magnitud de la actualización de los adaptadores LoRA.
-        "learning_rate": 1e-4,
+        "learning_rate": 5e-5,
 
         # Prompts preferidos/rechazados procesados simultáneamente por GPU.
         # El valor 2 mejora el uso de una GPU de 24 GB. Si aparece CUDA OOM,
@@ -72,7 +72,7 @@ CONFIG: dict[str, Any] = {
 
         # Batch utilizado durante la evaluación. Como no calcula gradientes,
         # normalmente puede ser mayor que el batch de entrenamiento.
-        "per_device_eval_batch_size": 4,
+        "per_device_eval_batch_size": 2,
 
         # Acumula gradientes antes de actualizar los pesos.
         # Con una GPU, batch efectivo = 2 × 4 = 8 preferencias.
@@ -83,7 +83,7 @@ CONFIG: dict[str, Any] = {
         "max_length": 512,
 
         # Regularización L2 aplicada por AdamW.
-        "weight_decay": 0.01,
+        "weight_decay": 0.05,
 
         # Fracción inicial para aumentar progresivamente el learning rate.
         "warmup_ratio": 0.03,
@@ -109,7 +109,7 @@ CONFIG: dict[str, Any] = {
         "alpha": 32,
 
         # Regularización aplicada a los adaptadores LoRA.
-        "dropout": 0.075,
+        "dropout": 0.10,
 
         # No entrena los términos bias del modelo base.
         "bias": "none",
