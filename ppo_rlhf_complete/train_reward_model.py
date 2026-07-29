@@ -63,7 +63,7 @@ CONFIG: dict[str, Any] = {
         "num_train_epochs": 3.0,
 
         # PRIORITARIO. Magnitud de la actualización de los adaptadores LoRA.
-        "learning_rate": 115e-4,
+        "learning_rate": 1e-4,
 
         # Prompts preferidos/rechazados procesados simultáneamente por GPU.
         # El valor 2 mejora el uso de una GPU de 24 GB. Si aparece CUDA OOM,
@@ -83,7 +83,7 @@ CONFIG: dict[str, Any] = {
         "max_length": 500,
 
         # Regularización L2 aplicada por AdamW.
-        "weight_decay": 0.05,
+        "weight_decay": 0.010,
 
         # Fracción inicial para aumentar progresivamente el learning rate.
         "warmup_ratio": 0.03,
