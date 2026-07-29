@@ -76,20 +76,20 @@ CONFIG: dict[str, Any] = {
     "batch": {
         # Prompts procesados simultáneamente por GPU.
         # Si aparece CUDA OOM, reducir de 2 a 1.
-        "per_device_train_batch_size": 2,
+        "per_device_train_batch_size": 4,
 
         # Pasos acumulados antes de actualizar los parámetros.
         "gradient_accumulation_steps": 4,
 
         # Respuestas procesadas simultáneamente durante los rollouts.
         # Incrementarlo mejora la utilización de GPU si existe VRAM disponible.
-        "local_rollout_forward_batch_size": 2,
+        "local_rollout_forward_batch_size": 4,
 
         # Divisiones internas del batch de PPO.
         "num_mini_batches": 1,
 
         # Trabajadores de CPU empleados por el DataLoader.
-        "dataloader_num_workers": 4,
+        "dataloader_num_workers": 6,
 
         # Acelera la transferencia CPU → GPU.
         "dataloader_pin_memory": True,
