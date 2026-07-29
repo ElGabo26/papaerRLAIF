@@ -250,7 +250,7 @@ def classify_prompts(
     dtype=torch.float32
 )
 
-    tokenizer.eval()
+    
     classifier.eval()
     
     embeddings = create_embeddings(
