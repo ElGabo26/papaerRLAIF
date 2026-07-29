@@ -32,9 +32,9 @@ from trl.experimental.ppo import PPOConfig, PPOTrainer
 # PRIORITARIOS son los primeros que conviene variar durante la experimentación.
 
 PREFERENCES_CSV="/workspace/papaerRLAIF/codTraining/calify/preferencesQwen.csv"
-MODEL_PATH="/workspace/models/Qwen2.5-1.5B-Instruct"
-OUTPUT_MODEL_PATH="/workspace/adaptedModels/PPO/finalPPOModels/Qwen2.5-1.5B-Instruct-PPO"
-REWARD_MODEL_PATH="/workspace/adaptedModels/PPO/mergedRewardModels/Qwen2.5-1.5B-Instruct"
+MODEL_PATH="/workspace/models/DeepSeek-R1-Distill-Qwen-1.5B"
+OUTPUT_MODEL_PATH="/workspace/adaptedModels/PPO/finalPPOModels/DeepSeek-R1-Distill-Qwen-1.5B-PPO"
+REWARD_MODEL_PATH="/workspace/adaptedModels/PPO/mergedRewardModels/DeepSeek-R1-Distill-Qwen-1.5B"
 
 from typing import Any
 

@@ -20,10 +20,10 @@ from trl import RewardConfig, RewardTrainer
 
 REQUIRED_COLUMNS = {"prompt", "chosen", "rejected"}
 
-PREFERENCES_CSV="/workspace/papaerRLAIF/codTraining/calify/preferencesQwen.csv"
-MODEL_PATH="/workspace/models/Qwen2.5-1.5B-Instruct"
-OUTPUT_MODEL_PATH="/workspace/adaptedModels/PPO/rewardModels/Qwen2.5-1.5B-Instruct"
-OUTPUT_MERGED_MODEL_PATH="/workspace/adaptedModels/PPO/mergedRewardModels/Qwen2.5-1.5B-Instruct"
+PREFERENCES_CSV="/workspace/papaerRLAIF/codTraining/calify/preferencesDeep.csv"
+MODEL_PATH="/workspace/models/DeepSeek-R1-Distill-Qwen-1.5B"
+OUTPUT_MODEL_PATH="/workspace/adaptedModels/PPO/rewardModels/DeepSeek-R1-Distill-Qwen-1.5B"
+OUTPUT_MERGED_MODEL_PATH="/workspace/adaptedModels/PPO/mergedRewardModels/DeepSeek-R1-Distill-Qwen-1.5B"
 
 # ============================================================
 # CONFIGURACIÓN DEL REWARD MODEL
@@ -60,7 +60,7 @@ CONFIG: dict[str, Any] = {
     "training": {
         # PRIORITARIO. Recorridos completos sobre todos los datos de entrenamiento.
         # Se mantienen las tres épocas del código original.
-        "num_train_epochs": 3.0,
+        "num_train_epochs": .0,
 
         # PRIORITARIO. Magnitud de la actualización de los adaptadores LoRA.
         "learning_rate": 1e-4,
