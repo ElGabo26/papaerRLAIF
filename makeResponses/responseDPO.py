@@ -1,7 +1,7 @@
 import pandas as pd
 import tqdm
 import os
-from loadAlginModelTools import cargar_modelo, generar_respuesta
+from loadAlginModelTools import cargar_modelo, generar_respuestas_batch
 
 PROMPTS_CSV = "/workspace/papaerRLAIF/makeResponses/promptBases/finalPromptBases/elementary_math_prompts_1200.csv"
 prompts_df = pd.read_csv(PROMPTS_CSV)
@@ -18,11 +18,8 @@ for dpoRoute in dpoRoutes:
     responses=[]
     model_path = os.path.join(DPO_MODELS_PATH, dpoRoute)
     model, tokenizer = cargar_modelo(model_path)
-    with tqdm.tqdm(total=len(prompts), desc=f"Generando respuestas para {dpoRoute}") as pbar:
-        for prompt in prompts:
-            response = generar_respuesta(model, tokenizer, prompt)
-            responses.append(response)
-            pbar.update(1)
+    responses=generar_respuestas_batch(model,tokenizer,
+                                       prompts,batch_size=120,max_new_tokens=200,num_responses=1)
             
     result_df = pd.DataFrame({"prompt": prompts, "response": responses})
     result_df['algin']="DPO"
@@ -36,11 +33,8 @@ for ppoRoute in ppoRoutes:
     model_path = os.path.join(PPO_MODELS_PATH, ppoRoute)
     model, tokenizer = cargar_modelo(model_path)
     responses=[]
-    with tqdm.tqdm(total=len(prompts), desc=f"Generando respuestas para {ppoRoute}") as pbar:
-        for prompt in prompts:
-            response = generar_respuesta(model, tokenizer, prompt)
-            responses.append(response)
-            pbar.update(1)
+    responses=generar_respuestas_batch(model,tokenizer,
+                                       prompts,batch_size=120,max_new_tokens=200,num_responses=1)
     result_df = pd.DataFrame({"prompt": prompts, "response": responses})
     result_df['algin']="PPO"
     result_df['model']=ppoRoute
