@@ -1,7 +1,6 @@
 # ============================================================
-# PYTORCH
-# RTX PRO 4000 Blackwell: usar build CUDA 12.8.
-# El índice adicional permite encontrar torch con soporte cu128.
+# PYTORCH - CUDA 12.8
+# RTX PRO 4000 Blackwell
 # ============================================================
 
 --extra-index-url https://download.pytorch.org/whl/cu128
@@ -9,30 +8,32 @@
 torch==2.7.1
 torchvision==0.22.1
 torchaudio==2.7.1
-trl[peft]==1.9.1
+
 
 # ============================================================
-# HUGGING FACE
-# Versiones fijadas para evitar incompatibilidades entre
-# transformers, TRL, PEFT, Accelerate y Datasets.
+# HUGGING FACE / PPO / RLHF
+# Compatibles para TRL PPOTrainer, PEFT, Accelerate y Datasets
 # ============================================================
 
+trl==1.9.1
 transformers==5.14.1
-tokenizers==0.21.0
-accelerate>=1.10.0
-huggingface-hub==1.5.0
-datasets>=4.7.0
-peft>=0.17.0
+accelerate>=1.10.0,<2.0.0
+peft>=0.17.0,<1.0.0
+datasets>=4.7.0,<5.0.0
+huggingface-hub>=1.5.0,<2.0.0
 
+# No fijar tokenizers manualmente.
+# Transformers instalará la versión compatible.
+# tokenizers
 
 
 # ============================================================
 # CUANTIZACIÓN Y ARCHIVOS DE MODELO
 # ============================================================
 
-bitsandbytes==0.45.2
-safetensors>=0.5.0
-sentencepiece>=0.2.0
+bitsandbytes>=0.45.4,<0.46.0
+safetensors>=0.5.0,<0.6.0
+sentencepiece>=0.2.0,<0.3.0
 protobuf>=5.29.0,<6.0.0
 
 
@@ -43,14 +44,14 @@ protobuf>=5.29.0,<6.0.0
 numpy>=1.26.4,<2.1.0
 pandas>=2.2.0,<3.0.0
 scikit-learn>=1.6.0,<1.7.0
-evaluate==0.4.3
+evaluate>=0.4.3,<0.5.0
 
 
 # ============================================================
 # MONITOREO Y UTILIDADES
 # ============================================================
 
-tensorboard>=2.18.0
+tensorboard>=2.18.0,<3.0.0
 tqdm>=4.67.0,<5.0.0
 psutil>=6.1.0,<7.0.0
 nvidia-ml-py>=12.560.30
