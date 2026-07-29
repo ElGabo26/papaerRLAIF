@@ -17,7 +17,7 @@ for dpoRoute in dpoRoutes:
     responses=[]
     model_path = os.path.join(DPO_MODELS_PATH, dpoRoute)
     model, tokenizer = cargar_modelo(model_path)
-    with tdqm.tqdm(total=len(prompts), desc=f"Generando respuestas para {dpoRoute}") as pbar:
+    with tqdm.tqdm(total=len(prompts), desc=f"Generando respuestas para {dpoRoute}") as pbar:
         for prompt in prompts:
             response = generar_respuesta(model, tokenizer, prompt)
             responses.append(response)
@@ -35,7 +35,7 @@ for ppoRoute in ppoRoutes:
     model_path = os.path.join(PPO_MODELS_PATH, ppoRoute)
     model, tokenizer = cargar_modelo(model_path)
     responses=[]
-    with tdqm.tqdm(total=len(prompts), desc=f"Generando respuestas para {ppoRoute}") as pbar:
+    with tqdm.tqdm(total=len(prompts), desc=f"Generando respuestas para {ppoRoute}") as pbar:
         for prompt in prompts:
             response = generar_respuesta(model, tokenizer, prompt)
             responses.append(response)
