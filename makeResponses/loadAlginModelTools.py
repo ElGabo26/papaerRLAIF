@@ -26,7 +26,7 @@ def cargar_modelo(ruta_modelo: str):
     model = AutoPeftModelForCausalLM.from_pretrained(
         ruta_modelo,
         torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
-        device_map="auto",
+        device_map="cuda" if torch.cuda.is_available() else "cpu",
         local_files_only=True
     )
 
