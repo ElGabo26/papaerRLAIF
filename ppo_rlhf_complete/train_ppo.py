@@ -31,7 +31,7 @@ from trl.experimental.ppo import PPOConfig, PPOTrainer
 # Los parámetros están agrupados por función. Los parámetros marcados como
 # PRIORITARIOS son los primeros que conviene variar durante la experimentación.
 
-PREFERENCES_CSV="workspace/papaerRLAIF/codTraining/calify/preferencesQwen.csv"
+PREFERENCES_CSV="/workspace/papaerRLAIF/codTraining/calify/preferencesQwen.csv"
 MODEL_PATH="/workspace/models/Qwen2.5-1.5B-Instruct"
 OUTPUT_MODEL_PATH="/workspace/adaptedModels/PPO/finalPPOModels/Qwen2.5-1.5B-Instruct-PPO"
 REWARD_MODEL_PATH="/workspace/adaptedModels/PPO/mergedRewardModels/Qwen2.5-1.5B-Instruct"
