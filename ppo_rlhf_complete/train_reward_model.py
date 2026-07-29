@@ -68,7 +68,7 @@ CONFIG: dict[str, Any] = {
         # Prompts preferidos/rechazados procesados simultáneamente por GPU.
         # El valor 2 mejora el uso de una GPU de 24 GB. Si aparece CUDA OOM,
         # debe reducirse a 1 y duplicar gradient_accumulation_steps.
-        "per_device_train_batch_size": 2,
+        "per_device_train_batch_size": 4,
 
         # Batch utilizado durante la evaluación. Como no calcula gradientes,
         # normalmente puede ser mayor que el batch de entrenamiento.
