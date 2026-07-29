@@ -76,7 +76,7 @@ CONFIG: dict[str, Any] = {
     "batch": {
         # Prompts procesados simultáneamente por GPU.
         # Si aparece CUDA OOM, reducir de 2 a 1.
-        "per_device_train_batch_size": 4,
+        "per_device_train_batch_size": 2,
 
         # Pasos acumulados antes de actualizar los parámetros.
         "gradient_accumulation_steps": 4,
