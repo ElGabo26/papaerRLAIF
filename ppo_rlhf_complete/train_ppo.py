@@ -127,6 +127,24 @@ CONFIG: dict[str, Any] = {
         "missing_eos_penalty": 1.0,
     },
 
+    "baseline": {
+        # Activa la evaluación del modelo SFT antes de aplicar PPO.
+        # Esta fila permite comparar si PPO mejora o empeora la recompensa base.
+        "enabled": True,
+
+        # Usa evaluación para medir generalización inicial. Cambia a "train"
+        # solo si deseas medir la base sobre los mismos prompts de entrenamiento.
+        "dataset_split": "eval",
+
+        # Limita el costo de la medición base. Usa None para evaluar todos los
+        # prompts de la partición seleccionada.
+        "max_samples": 128,
+
+        # Batch usado solo para generar y puntuar la línea base.
+        # Aumentarlo acelera la evaluación si la VRAM lo permite.
+        "batch_size": 4,
+    },
+
     "lora": {
         # Reduce parámetros entrenables y costo del backward.
         "r": 8,
@@ -207,6 +225,9 @@ PRIORITY_CONFIG_COLUMNS = {
     "config_response_length": ("generation", "response_length"),
     "config_temperature": ("generation", "temperature"),
     "config_missing_eos_penalty": ("generation", "missing_eos_penalty"),
+    "config_baseline_enabled": ("baseline", "enabled"),
+    "config_baseline_split": ("baseline", "dataset_split"),
+    "config_baseline_max_samples": ("baseline", "max_samples"),
     "config_lora_r": ("lora", "r"),
     "config_lora_alpha": ("lora", "alpha"),
     "config_lora_dropout": ("lora", "dropout"),
@@ -298,6 +319,121 @@ def load_prompt_dataset(
     return train_dataset, eval_dataset
 
 
+def compute_baseline_metrics(
+    config: dict[str, Any],
+    tokenizer: AutoTokenizer,
+    policy: AutoModelForCausalLM,
+    reward_model: AutoModelForSequenceClassification,
+    train_dataset: Dataset,
+    eval_dataset: Dataset,
+) -> dict[str, Any]:
+    """
+    Evalúa el modelo SFT antes de PPO usando el Reward Model.
+
+    La métrica base principal es la recompensa promedio de las respuestas
+    generadas por la política inicial. Esta fila queda en el mismo CSV que las
+    épocas PPO para comparar el punto de partida contra el modelo alineado.
+    """
+    baseline_config = config["baseline"]
+    split_name = baseline_config["dataset_split"]
+    if split_name == "train":
+        dataset = train_dataset
+    elif split_name == "eval":
+        dataset = eval_dataset
+    else:
+        raise ValueError("baseline.dataset_split debe ser 'train' o 'eval'.")
+
+    if len(dataset) == 0:
+        raise ValueError("La partición seleccionada para baseline está vacía.")
+
+    max_samples = baseline_config["max_samples"]
+    sample_count = len(dataset) if max_samples is None else min(
+        int(max_samples),
+        len(dataset),
+    )
+    dataset = dataset.select(range(sample_count))
+
+    device = PartialState().device
+    policy.to(device)
+    reward_model.to(device)
+    policy.eval()
+    reward_model.eval()
+
+    batch_size = int(baseline_config["batch_size"])
+    max_new_tokens = int(config["generation"]["response_length"])
+    temperature = float(config["generation"]["temperature"])
+
+    reward_values: list[float] = []
+    response_lengths: list[int] = []
+    eos_count = 0
+
+    old_use_cache = getattr(policy.config, "use_cache", None)
+    policy.config.use_cache = True
+
+    with torch.no_grad():
+        for start in range(0, sample_count, batch_size):
+            batch = dataset[start : start + batch_size]
+            prompts = [{"input_ids": ids} for ids in batch["input_ids"]]
+            prompt_tensors = tokenizer.pad(
+                prompts,
+                padding=True,
+                return_tensors="pt",
+            ).to(device)
+
+            generated = policy.generate(
+                **prompt_tensors,
+                max_new_tokens=max_new_tokens,
+                do_sample=temperature > 0,
+                temperature=temperature if temperature > 0 else None,
+                eos_token_id=tokenizer.eos_token_id,
+                pad_token_id=tokenizer.pad_token_id,
+            )
+
+            prompt_width = prompt_tensors["input_ids"].shape[1]
+            attention_mask = torch.ones_like(generated, dtype=torch.long)
+            attention_mask[:, :prompt_width] = prompt_tensors["attention_mask"]
+            rewards = reward_model(
+                input_ids=generated,
+                attention_mask=attention_mask,
+            ).logits.squeeze(-1)
+
+            reward_values.extend(
+                rewards.detach().float().cpu().tolist()
+            )
+
+            for row_index in range(generated.shape[0]):
+                response = generated[row_index, prompt_width:]
+                if (
+                    tokenizer.eos_token_id is not None
+                    and (response == tokenizer.eos_token_id).any().item()
+                ):
+                    eos_count += 1
+                response = response[
+                    response != tokenizer.pad_token_id
+                ]
+                response_lengths.append(int(response.numel()))
+
+    if old_use_cache is not None:
+        policy.config.use_cache = old_use_cache
+
+    rewards_tensor = torch.tensor(reward_values, dtype=torch.float32)
+    lengths_tensor = torch.tensor(response_lengths, dtype=torch.float32)
+
+    return {
+        "baseline_split": split_name,
+        "baseline_num_samples": sample_count,
+        "baseline_reward_mean": float(rewards_tensor.mean().item()),
+        "baseline_reward_std": float(
+            rewards_tensor.std(unbiased=False).item()
+        ),
+        "baseline_reward_min": float(rewards_tensor.min().item()),
+        "baseline_reward_max": float(rewards_tensor.max().item()),
+        "baseline_response_length_mean": float(lengths_tensor.mean().item()),
+        "baseline_response_length_max": int(lengths_tensor.max().item()),
+        "baseline_eos_rate": eos_count / sample_count,
+    }
+
+
 class PPOEpochMetricsCallback(TrainerCallback):
     """
     Captura las métricas de PPO y crea un único dataset por época.
@@ -325,6 +461,11 @@ class PPOEpochMetricsCallback(TrainerCallback):
         self.total_episodes = total_episodes
         self.run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.logs: list[dict[str, Any]] = []
+        self.baseline_metrics: dict[str, Any] | None = None
+
+    def set_baseline_metrics(self, metrics: dict[str, Any]) -> None:
+        """Registra las métricas del modelo SFT antes de entrenar PPO."""
+        self.baseline_metrics = metrics
 
     def on_log(
         self,
@@ -477,6 +618,26 @@ class PPOEpochMetricsCallback(TrainerCallback):
         epoch_metrics = pd.DataFrame(rows)
         if epoch_metrics.empty:
             raise RuntimeError("No fue posible agregar las métricas por época.")
+
+        if self.baseline_metrics:
+            baseline_row = {
+                "run_id": self.run_id,
+                "phase": "baseline",
+                "dataset_epoch": 0,
+                "global_step_start": 0,
+                "global_step_end": 0,
+                "logged_updates": 0,
+                "episodes_start_estimated": 0,
+                "episodes_end_estimated": 0,
+                **self.baseline_metrics,
+                **priority_config,
+            }
+            epoch_metrics.insert(2, "phase", "ppo")
+            epoch_metrics = pd.concat(
+                [pd.DataFrame([baseline_row]), epoch_metrics],
+                ignore_index=True,
+                sort=False,
+            )
 
         return epoch_metrics
 
@@ -714,6 +875,30 @@ def main(config: dict[str, Any]) -> None:
         eval_dataset_size=len(eval_dataset),
         total_episodes=total_episodes,
     )
+
+    if config["baseline"]["enabled"]:
+        baseline_metrics = compute_baseline_metrics(
+            config=config,
+            tokenizer=tokenizer,
+            policy=policy,
+            reward_model=reward_model,
+            train_dataset=train_dataset,
+            eval_dataset=eval_dataset,
+        )
+        metrics_callback.set_baseline_metrics(baseline_metrics)
+        print("\n========== MÉTRICAS BASE ANTES DE PPO ==========")
+        print(f"Partición: {baseline_metrics['baseline_split']}")
+        print(f"Muestras: {baseline_metrics['baseline_num_samples']}")
+        print(
+            "Recompensa media: "
+            f"{baseline_metrics['baseline_reward_mean']:.4f}"
+        )
+        print(
+            "Longitud media de respuesta: "
+            f"{baseline_metrics['baseline_response_length_mean']:.2f} tokens"
+        )
+        print(f"EOS rate: {baseline_metrics['baseline_eos_rate']:.4f}")
+        print("================================================\n")
 
     trainer = PPOTrainer(
         args=ppo_args,
