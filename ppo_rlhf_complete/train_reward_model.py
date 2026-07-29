@@ -49,7 +49,7 @@ CONFIG: dict[str, Any] = {
     },
     "data": {
         # Fracción del dataset reservada para validación.
-        "test_size": 0.15,
+        "test_size": 0.20,
 
         # Procesos de CPU utilizados para preparar los pares de preferencias.
         "num_proc": 4,
@@ -63,7 +63,7 @@ CONFIG: dict[str, Any] = {
         "num_train_epochs": 3.0,
 
         # PRIORITARIO. Magnitud de la actualización de los adaptadores LoRA.
-        "learning_rate": 15e-4,
+        "learning_rate": 115e-4,
 
         # Prompts preferidos/rechazados procesados simultáneamente por GPU.
         # El valor 2 mejora el uso de una GPU de 24 GB. Si aparece CUDA OOM,
@@ -80,10 +80,10 @@ CONFIG: dict[str, Any] = {
 
         # PRIORITARIO. Longitud máxima de prompt + respuesta.
         # No reduce el dataset; solo recorta secuencias que superan este límite.
-        "max_length": 512,
+        "max_length": 500,
 
         # Regularización L2 aplicada por AdamW.
-        "weight_decay": 0.075,
+        "weight_decay": 0.05,
 
         # Fracción inicial para aumentar progresivamente el learning rate.
         "warmup_ratio": 0.03,
