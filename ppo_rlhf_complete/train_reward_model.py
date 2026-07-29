@@ -60,7 +60,7 @@ CONFIG: dict[str, Any] = {
     "training": {
         # PRIORITARIO. Recorridos completos sobre todos los datos de entrenamiento.
         # Se mantienen las tres épocas del código original.
-        "num_train_epochs": .0,
+        "num_train_epochs": 3.0,
 
         # PRIORITARIO. Magnitud de la actualización de los adaptadores LoRA.
         "learning_rate": 1e-4,
