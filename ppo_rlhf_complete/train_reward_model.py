@@ -76,7 +76,7 @@ CONFIG: dict[str, Any] = {
 
         # Acumula gradientes antes de actualizar los pesos.
         # Con una GPU, batch efectivo = 2 × 4 = 8 preferencias.
-        "gradient_accumulation_steps": 4,
+        "gradient_accumulation_steps": 2,
 
         # PRIORITARIO. Longitud máxima de prompt + respuesta.
         # No reduce el dataset; solo recorta secuencias que superan este límite.
