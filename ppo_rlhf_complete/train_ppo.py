@@ -184,7 +184,7 @@ CONFIG: dict[str, Any] = {
 
     "logging": {
         # Reduce escrituras y sincronizaciones CPU/GPU.
-        "logging_steps": 20,
+        "logging_steps": 1,
 
         # Desactiva evaluación durante el entrenamiento.
         # El código debe admitir "no".
