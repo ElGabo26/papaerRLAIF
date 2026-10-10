@@ -4,6 +4,7 @@ from tqdm import tqdm
 from time import time
 from  tools import  makeResponse, testModel
 from metrics import medir_recursos
+from loadAlginModelTools import cargar_modelo
 
 REPETITIONS=1
 MODEL_ROUTE="/workspace/models"
@@ -17,7 +18,7 @@ total=len(prompts1)
 
 def getresults(token, model,x):
     t0=time()
-    r=makeResponse(token,model,x,0.25)
+    r=makeResponse(token,model,x)
     #despues=medir_recursos()
     t1=time()
     barra.update(1)
@@ -34,6 +35,7 @@ for ruta in models:
         for i in range(REPETITIONS): 
             print(f"repeticion_{i+1}")
             columnas=['prompt',f'response',f'tiempo_{i+1}']  
+            model, tokenizer = cargar_modelo(ruta)
             with tqdm(total=total) as barra:
                 resultado = list(map(
                     lambda x: getresults(token, model,x),
