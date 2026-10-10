@@ -38,7 +38,7 @@ for ruta in models:
             model, tokenizer = testModel(ruta)
             with tqdm(total=total) as barra:
                 resultado = list(map(
-                    lambda x: getresults(token, model,x),
+                    lambda x: getresults(tokenizer, model,x),
                     prompts1))
             r=pd.DataFrame(columns=columnas,data=resultado)
             r['prompt_id']=prompts1['prompt_id']
