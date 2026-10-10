@@ -39,7 +39,7 @@ for ruta in models:
             resultado=generar_respuestas_batch(model,tokenizer,
                                        prompts,batch_size=20,max_new_tokens=200,num_responses=1)
             r= pd.DataFrame({"prompt": prompts, "response": resultado})
-            r['prompt_id']=prompts['prompt_id']
+            r['prompt_id']=base['prompt_id']
             name='result'+ruta.split('/')[-1]
             r.to_csv(f"{RUTAOUTPUT}/{name}_{i+1}.csv")
             print(f"RESPUESTAS: {i+1} REALIZADAS")
