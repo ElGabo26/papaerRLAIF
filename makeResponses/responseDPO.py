@@ -35,7 +35,7 @@ for ppoRoute in ppoRoutes:
     model, tokenizer = cargar_modelo(model_path)
     responses=[]
     responses=generar_respuestas_batch(model,tokenizer,
-                                       prompts,batch_size=120,max_new_tokens=200,num_responses=1)
+                                       prompts,batch_size=20,max_new_tokens=200,num_responses=1)
     result_df = pd.DataFrame({"prompt": prompts, "response": responses})
     result_df['algin']="PPO"
     result_df['model']=ppoRoute

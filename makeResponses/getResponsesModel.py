@@ -4,14 +4,14 @@ from tqdm import tqdm
 from time import time
 from  tools import  makeResponse, testModel
 from metrics import medir_recursos
-from loadAlginModelTools import cargar_modelo
+from loadAlginModelTools import cargar_modelo, generar_respuestas_batch
 
 REPETITIONS=1
 MODEL_ROUTE="/workspace/models"
 RUTAOUTPUT="/workspace/papaerRLAIF/makeResponses/responses"
 base=pd.read_csv("/workspace/papaerRLAIF/makeResponses/promptBases/finalPromptBases/elementary_math_prompts_1200.csv")
-prompts1=base['prompt'].values
-total=len(prompts1)
+prompts=base['prompt'].values.tolist()
+total=len(prompts)
 
 
 
@@ -36,12 +36,10 @@ for ruta in models:
             print(f"repeticion_{i+1}")
             columnas=['prompt',f'response',f'tiempo_{i+1}']  
             model, tokenizer = testModel(ruta)
-            with tqdm(total=total) as barra:
-                resultado = list(map(
-                    lambda x: getresults(tokenizer, model,x),
-                    prompts1))
+            resultado=generar_respuestas_batch(model,tokenizer,
+                                       prompts,batch_size=20,max_new_tokens=200,num_responses=1)
             r=pd.DataFrame(columns=columnas,data=resultado)
-            r['prompt_id']=prompts1['prompt_id']
+            r['prompt_id']=prompts['prompt_id']
             name='result'+ruta.split('/')[-1]
             r.to_csv(f"{RUTAOUTPUT}/{name}_{i+1}.csv")
             print(f"RESPUESTAS: {i+1} REALIZADAS")
