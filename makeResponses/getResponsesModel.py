@@ -34,11 +34,11 @@ for ruta in models:
         print("MODELO: ", ruta)
         for i in range(REPETITIONS): 
             print(f"repeticion_{i+1}")
-            columnas=['prompt',f'response',f'tiempo_{i+1}']  
+            
             tokenizer,model = testModel(ruta)
             resultado=generar_respuestas_batch(model,tokenizer,
                                        prompts,batch_size=20,max_new_tokens=200,num_responses=1)
-            r=pd.DataFrame(columns=columnas,data=resultado)
+            r= pd.DataFrame({"prompt": prompts, "response": resultado})
             r['prompt_id']=prompts['prompt_id']
             name='result'+ruta.split('/')[-1]
             r.to_csv(f"{RUTAOUTPUT}/{name}_{i+1}.csv")
