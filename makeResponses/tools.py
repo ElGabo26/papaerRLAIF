@@ -31,6 +31,7 @@ def testModel(rutaModelo):
     print("Arquitectura:", model.__class__.__name__)
     
     #prueba de funcionamiento
+    '''
     mensajes=[{
         "role": "user",
         "content":"make a  question for elementary  school student  to learn addition"
@@ -59,6 +60,7 @@ def testModel(rutaModelo):
         skip_special_tokens=True)
 
     print(respuesta)
+    '''
     return tokenizer, model
 
 def makeResponse(tokenizer, model, prompt, temperature=0.3):
