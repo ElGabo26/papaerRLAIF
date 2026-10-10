@@ -35,7 +35,7 @@ for ruta in models:
         for i in range(REPETITIONS): 
             print(f"repeticion_{i+1}")
             columnas=['prompt',f'response',f'tiempo_{i+1}']  
-            model, tokenizer = cargar_modelo(ruta)
+            model, tokenizer = testModel(ruta)
             with tqdm(total=total) as barra:
                 resultado = list(map(
                     lambda x: getresults(token, model,x),
