@@ -24,15 +24,14 @@ def getresults(token, model,x):
     barra.update(1)
     return x,r,t1-t0
 
-models=['/workspace/models/DeepSeek-R1-Distill-Qwen-1.5B', '/workspace/models/Qwen2.5-1.5B-Instruct']
+#models=['/workspace/models/DeepSeek-R1-Distill-Qwen-1.5B', '/workspace/models/Qwen2.5-1.5B-Instruct']
 #models=os.listdir(MODEL_ROUTE)
-#models=[f"{MODEL_ROUTE}/{x}" if x != "deberta-v3-large" else None for x in models]
+models=[f"{MODEL_ROUTE}/{x}" if x != "deberta-v3-large" else None for x in models]
 
 
 for ruta in models:
     if ruta:
         print("MODELO: ", ruta)
-        token, model= testModel(ruta)    
         for i in range(REPETITIONS): 
             print(f"repeticion_{i+1}")
             columnas=['prompt',f'response',f'tiempo_{i+1}']  
