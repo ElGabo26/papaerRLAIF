@@ -9,8 +9,7 @@ REPETITIONS=1
 MODEL_ROUTE="/workspace/models"
 RUTAOUTPUT="/workspace/papaerRLAIF/makeResponses/responses"
 base=pd.read_csv("/workspace/papaerRLAIF/makeResponses/promptBases/finalPromptBases/elementary_math_prompts_1200.csv")
-prompts=base.sample(200, random_state=42)
-prompts1=prompts['prompt'].values
+prompts1=base['prompt'].values
 total=len(prompts1)
 
 
@@ -40,6 +39,7 @@ for ruta in models:
                     lambda x: getresults(token, model,x),
                     prompts1))
             r=pd.DataFrame(columns=columnas,data=resultado)
+            r['prompt_id']=prompts1['prompt_id']
             name='result'+ruta.split('/')[-1]
             r.to_csv(f"{RUTAOUTPUT}/{name}_{i+1}.csv")
             print(f"RESPUESTAS: {i+1} REALIZADAS")
